@@ -82,3 +82,11 @@
     text-decoration: underline;
   }
   
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  text-align: center;
+  min-height: 1.2rem; /* reserva espaço fixo */
+  margin-bottom: 0.5rem;
+}
+

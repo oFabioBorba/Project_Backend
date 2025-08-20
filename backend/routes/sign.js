@@ -23,4 +23,24 @@ router.post("/register", async (req, res) => {
   }
 });
 
+router.post('/verifylogins', async (req, res)=> {
+  const {email, username} = req.body;
+
+  try{
+    const resemail = await db.any('SELECT * FROM users WHERE email = $1', [email]);
+    if (resemail.length > 0){
+      return res.status(400).json({error: "Email já cadastrado."})
+    }
+
+    const resusername = await db.any('SELECT * FROM users WHERE username = $1', [username]);
+    if (resusername.length > 0){
+      return res.status(400).json({error: "Nome de usuário já cadastrado."})
+    }
+    res.status(200).json({message: "Usuário e email disponível."});
+
+  }catch(error){
+    res.status(500).json({error: "Erro ao verificar usuário."})
+  }
+})
+
 export default router;
