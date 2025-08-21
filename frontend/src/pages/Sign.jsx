@@ -11,8 +11,15 @@ export default function Sign() {
 
     const verifyAndInsertLogins = async (username, email, password) => {
         try {
+
             setMessage("");
             setIsError(false);
+
+            if (password !== confirmPassword && confirmPassword !== "") {
+                setMessage("As senhas não coincidem!");
+                setIsError(true);
+                return;
+            }
 
             const verifyResponse = await fetch('http://localhost:8080/sign/verifylogins', {
                 method: 'POST',
@@ -40,7 +47,7 @@ export default function Sign() {
                 setMessage(registerData.error);
                 setIsError(true);
             } else if (registerData.message) {
-                setMessage(registerData.message);
+                setMessage("Usuário cadastrado com sucesso! Redirecionando...");
                 setIsError(false);
                 setTimeout(() => {
                     window.location.href = '/';
@@ -112,11 +119,8 @@ export default function Sign() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
 
-                {password !== confirmPassword && (
-                    <p className="error-message">As senhas não coincidem.</p>
-                )}
 
-                <button type="submit" disabled={password !== confirmPassword}>
+                <button type="submit">
                     Registrar
                 </button>
 

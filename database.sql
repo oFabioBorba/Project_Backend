@@ -1,9 +1,9 @@
-CREATE TABLE Usuario (
-    id_usuario SERIAL PRIMARY KEY,
-    usuario_login VARCHAR(50) NOT NULL UNIQUE,
+CREATE TABLE Users (
+    id_user SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
-    senha_hash VARCHAR(255) NOT NULL,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    hash_password VARCHAR(255) NOT NULL,
+    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 

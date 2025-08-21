@@ -1,4 +1,3 @@
-/* Reset básico */
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +10,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #0d0d0d; /* Pode mudar a cor de fundo se quiser */
+    background-color: #0d0d0d; 
   }
   
   .container {
@@ -86,7 +85,16 @@
   color: red;
   font-size: 0.9rem;
   text-align: center;
-  min-height: 1.2rem; /* reserva espaço fixo */
+  min-height: 1.2rem; 
+  margin-top: 10px;
   margin-bottom: 0.5rem;
 }
 
+.success-message {
+  color: green;
+  font-size: 0.9rem;
+  text-align: center;
+  min-height: 1.2rem; 
+  margin-top: 10px;
+  margin-bottom: 0.5rem;
+}
