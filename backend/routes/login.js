@@ -18,13 +18,13 @@ router.post("/verifylogin", async (req, res) => {
         if (!user) {
             return res.status(401).json({ error: "Credenciais inválidas." });
         }
-        const username = user.id_user
+        const userid = user.id_user
 
         const match = await bcrypt.compare(password, user.hash_password);
 
         if (match) {
             const token = jwt.sign(
-                {username, email}, JWT_SECRET, {expiresIn: "1h"}
+                {userid, email}, JWT_SECRET, {expiresIn: "1h"}
             )
             res.status(200).json({ message: token});
         } else {

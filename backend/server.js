@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import loginRouter from './routes/login.js';
 import signRouter from './routes/sign.js';
-
+import profileRouter from './routes/profile.js'
 
 const PORT = 8080;
 
@@ -12,6 +12,8 @@ app.use(cors());
 
 app.use('/login', loginRouter);
 app.use('/sign', signRouter);
+app.use('/profile', profileRouter)
+
 
 
 app.listen(PORT, () => {

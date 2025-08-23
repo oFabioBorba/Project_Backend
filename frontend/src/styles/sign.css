@@ -1,91 +1,142 @@
+:root {
+  --bg: #f7f8fa;
+  --card: #ffffff;
+  --muted: #555;
+  --text: #111;
+  --ring: #4f8cff;
+  --primary: #2196f3;
+  --primary-contrast: #fff;
+  --error: #d64545;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --radius: 14px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d0d0d;
+  --card: #1b1b1b;
+  --muted: #aaa;
+  --text: #fff;
+  --ring: #6ea8fe;
+  --primary: #2196f3;
+  --primary-contrast: #0b1324;
+  --error: #ff6b6b;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
-  }
-  
-  body {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #0d0d0d; 
-  }
-  
-  .container {
-    width: 100%;
-    max-width: 400px;
-    padding: 2rem;
-    background-color: #1b1b1b;
-    border-radius: 10px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-  }
-  
-  .sign-form h2 {
-    color: #fff;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .sign-form label {
-    display: block;
-    color: #ccc;
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-  }
-  
-  .sign-form input {
-    width: 100%;
-    padding: 0.7rem;
-    margin-bottom: 1rem;
-    border: none;
-    border-radius: 5px;
-    background-color: #2c2c2c;
-    color: #fff;
-  }
-  
-  .sign-form input::placeholder {
-    color: #888;
-  }
-  
-  .sign-form button {
-    width: 100%;
-    padding: 0.7rem;
-    background-color: #2196f3;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-  
-  .sign-form button:hover {
-    background-color: #1976d2;
-  }
-  
-  .register-text {
-    text-align: center;
-    margin-top: 1rem;
-    color: #aaa;
-    font-size: 0.85rem;
-  }
-  
-  .register-text a {
-    color: #2196f3;
-    text-decoration: none;
-  }
-  
-  .register-text a:hover {
-    text-decoration: underline;
-  }
-  
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+.container {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: background 0.3s, color 0.3s;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sign-form h2 {
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: var(--primary-contrast);
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-ghost {
+  width: auto;
+  padding: 6px 12px;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.sign-form label {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.sign-form input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.02);
+  color: var(--text);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.sign-form input::placeholder {
+  color: #888;
+}
+
+.sign-form input:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 4px rgba(79, 140, 255, 0.15);
+  background: #fff;
+}
+
+:root[data-theme="dark"] .sign-form input {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme="dark"] .sign-form input:focus {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .error-message {
-  color: red;
+  color: var(--error);
   font-size: 0.9rem;
   text-align: center;
-  min-height: 1.2rem; 
+  min-height: 1.2rem;
   margin-top: 10px;
   margin-bottom: 0.5rem;
 }
@@ -94,7 +145,23 @@
   color: green;
   font-size: 0.9rem;
   text-align: center;
-  min-height: 1.2rem; 
+  min-height: 1.2rem;
   margin-top: 10px;
   margin-bottom: 0.5rem;
+}
+
+.register-text {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.register-text a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
 }

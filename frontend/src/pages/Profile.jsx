@@ -1,0 +1,260 @@
+import { useEffect, useMemo, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+import "../styles/profile.css";
+
+export default function Profile() {
+  const [userId, setUserId] = useState("")
+  const [form, setForm] = useState({
+    cep: "",
+    neighbourhood: "",
+    city: "",
+    uf: "",
+    about: "",
+    photo: null,
+  });
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [status, setStatus] = useState({ loading: false, error: "" });
+  const [theme, setTheme] = useState(() => {
+   return localStorage.getItem("theme") || "dark";
+  });
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/";
+          return;
+        }
+
+        const decoded = jwtDecode(token);
+        const now = Date.now() / 1000;
+        setUserId(decoded.userid)
+
+        if (decoded.exp && decoded.exp < now) {
+          console.warn("Token expirado");
+          window.location.href = "/";
+          return;
+        }
+
+        console.log("Usuário autenticado:", decoded);
+      } catch (error) {
+        console.error("Token inválido:", error);
+        window.location.href = "/";
+      }
+    }
+
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+  if (form.cep.length === 8) {
+    setStatus({ loading: true, error: "" });
+
+    fetch(`https://viacep.com.br/ws/${form.cep}/json/`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.erro) {
+          setStatus({ loading: false, error: "CEP não encontrado" });
+        } else {
+          setForm(f => ({
+            ...f,
+            neighbourhood: data.bairro,
+            city: data.localidade,
+            uf: data.uf,
+          }));
+          setStatus({ loading: false, error: "" });
+        }
+      })
+      .catch(() => setStatus({ loading: false, error: "Erro ao consultar CEP" }));
+  }
+}, [form.cep]);
+
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+  
+  const maskedCep = useMemo(() => {
+    const digits = form.cep.replace(/\D/g, "").slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+  }, [form.cep]);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    if (name === "cep") {
+      setForm((f) => ({ ...f, cep: value.replace(/\D/g, "") }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
+  }
+
+  function handlePhoto(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setForm((f) => ({ ...f, photo: file }));
+    const url = URL.createObjectURL(file);
+    setPhotoPreview(url);
+  }
+
+async function handleSubmit(e) {
+  e.preventDefault();
+
+  const formData = new FormData();
+  formData.append("profile_photo", form.photo);
+  formData.append("id_user", userId);
+  formData.append("CEP", form.cep);
+  formData.append("neighbourhood", form.neighbourhood);
+  formData.append("city", form.city);
+  formData.append("UF", form.uf);
+  formData.append("about", form.about);
+
+  try {
+    const response = await fetch('http://localhost:8080/profile/saveprofile', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      alert("Perfil salvo com sucesso!");
+    } else {
+      const data = await response.json();
+      alert("Erro: " + data.error);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao enviar perfil");
+  }
+}
+
+
+  return (
+    <div className="profile-wrap">
+      <form className="card" onSubmit={handleSubmit}>
+        <div className="header">
+          <h1>Profile</h1>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? "🌞 Claro" : "🌙 Escuro"}
+          </button>
+        </div>
+
+        <div className="avatar-block">
+          <div className="avatar" aria-label="Pré-visualização da foto">
+            {photoPreview ? (
+              <img src={photoPreview} alt="Pré-visualização do perfil" />
+            ) : (
+              <span>Foto</span>
+            )}
+          </div>
+          <label className="btn-outlined">
+            Enviar foto
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePhoto}
+              style={{ display: "none" }}
+            />
+          </label>
+        </div>
+
+        <div className="grid">
+          <div className="field">
+            <label htmlFor="cep">CEP</label>
+            <input
+              id="cep"
+              name="cep"
+              inputMode="numeric"
+              placeholder="00000-000"
+              value={maskedCep}
+              onChange={handleChange}
+              aria-describedby="cepHelp"
+              maxLength={9}
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="neighbourhood">Bairro</label>
+            <input
+              id="neighbourhood"
+              name="neighbourhood"
+              placeholder="Seu bairro"
+              value={form.neighbourhood}
+              onChange={handleChange}
+              disabled
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="city">Cidade</label>
+            <input
+              id="city"
+              name="city"
+              placeholder="Sua cidade"
+              value={form.city}
+              onChange={handleChange}
+              disabled
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="uf">UF</label>
+            <input
+              id="uf"
+              name="uf"
+              placeholder="UF"
+              value={form.uf}
+              onChange={handleChange}
+              disabled
+            />
+          </div>
+
+          <div className="field field-full">
+            <label htmlFor="about">About me</label>
+            <textarea
+              id="about"
+              name="about"
+              placeholder="Fale um pouco sobre você…"
+              rows={5}
+              value={form.about}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        {status.loading && <div className="info">Consultando CEP…</div>}
+        {status.error && <div className="error">{status.error}</div>}
+
+        <div className="actions">
+          <button type="submit" className="btn-primary">
+            Salvar
+          </button>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              setForm({
+                cep: "",
+                neighbourhood: "",
+                city: "",
+                uf: "",
+                about: "",
+                photo: null,
+              });
+              setPhotoPreview(null);
+              setStatus({ loading: false, error: "" });
+            }}
+          >
+            Limpar
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
