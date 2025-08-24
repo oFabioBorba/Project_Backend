@@ -17,35 +17,58 @@ export default function Profile() {
   const [theme, setTheme] = useState(() => {
    return localStorage.getItem("theme") || "dark";
   });
+  const [statusProfile, setStatusProfile] = useState ("")
 
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          window.location.href = "/";
-          return;
-        }
-
-        const decoded = jwtDecode(token);
-        const now = Date.now() / 1000;
-        setUserId(decoded.userid)
-
-        if (decoded.exp && decoded.exp < now) {
-          console.warn("Token expirado");
-          window.location.href = "/";
-          return;
-        }
-
-        console.log("Usuário autenticado:", decoded);
-      } catch (error) {
-        console.error("Token inválido:", error);
+ useEffect(() => {
+  async function checkAuthAndLoadProfile() {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
         window.location.href = "/";
+        return;
       }
-    }
 
-    checkAuth();
-  }, []);
+      const decoded = jwtDecode(token);
+      const now = Date.now() / 1000;
+
+      if (decoded.exp && decoded.exp < now) {
+        window.location.href = "/";
+        return;
+      }
+
+      setUserId(decoded.userid);
+
+      const response = await fetch(`http://localhost:8080/profile/getprofile/${decoded.userid}`, {
+        method: 'GET',
+        headers: { 'content-type': 'application/json' }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const profile = data.response; 
+        setStatusProfile(1);
+        setForm({
+          cep: profile.cep || "",
+          neighbourhood: profile.neighbourhood || "",
+          city: profile.city || "",
+          uf: profile.uf || "",
+          about: profile.about || "",
+          photo: profile.profile_photo || null,
+        });
+
+        if (profile.profile_photo) {
+          const photoUrl = `data:image/jpeg;base64,${profile.profile_photo}`;
+          setPhotoPreview(photoUrl);
+        }
+      }
+    } catch (error) {
+      console.log("Erro ao autenticar ou carregar perfil", error);
+    }
+  }
+
+  checkAuthAndLoadProfile();
+}, []);
+
 
   useEffect(() => {
   if (form.cep.length === 8) {
@@ -75,7 +98,7 @@ export default function Profile() {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
-  
+
   const maskedCep = useMemo(() => {
     const digits = form.cep.replace(/\D/g, "").slice(0, 8);
     if (digits.length <= 5) return digits;
@@ -103,7 +126,6 @@ async function handleSubmit(e) {
   e.preventDefault();
 
   const formData = new FormData();
-  formData.append("profile_photo", form.photo);
   formData.append("id_user", userId);
   formData.append("CEP", form.cep);
   formData.append("neighbourhood", form.neighbourhood);
@@ -111,21 +133,45 @@ async function handleSubmit(e) {
   formData.append("UF", form.uf);
   formData.append("about", form.about);
 
-  try {
-    const response = await fetch('http://localhost:8080/profile/saveprofile', {
-      method: 'POST',
-      body: formData
-    });
+  if (form.photo instanceof File) {
+  formData.append("profile_photo", form.photo);
+}
 
-    if (response.ok) {
-      alert("Perfil salvo com sucesso!");
-    } else {
-      const data = await response.json();
-      alert("Erro: " + data.error);
+
+  if (statusProfile === 1){
+      try {
+      const response = await fetch('http://localhost:8080/profile/updateprofile', {
+        method: 'PUT',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert("Perfil salvo com sucesso!");
+      } else {
+        const data = await response.json();
+        alert("Erro: " + data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao atualizar perfil");
     }
-  } catch (error) {
-    console.error(error);
-    alert("Erro ao enviar perfil");
+  }else{
+      try {
+      const response = await fetch('http://localhost:8080/profile/saveprofile', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert("Perfil salvo com sucesso!");
+      } else {
+        const data = await response.json();
+        alert("Erro: " + data.error);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao enviar perfil");
+    }
   }
 }
 
@@ -134,7 +180,7 @@ async function handleSubmit(e) {
     <div className="profile-wrap">
       <form className="card" onSubmit={handleSubmit}>
         <div className="header">
-          <h1>Profile</h1>
+          <h1>Perfil</h1>
           <button
             type="button"
             className="btn-ghost"
@@ -216,7 +262,7 @@ async function handleSubmit(e) {
           </div>
 
           <div className="field field-full">
-            <label htmlFor="about">About me</label>
+            <label htmlFor="about">Fale sobre você</label>
             <textarea
               id="about"
               name="about"
@@ -224,6 +270,7 @@ async function handleSubmit(e) {
               rows={5}
               value={form.about}
               onChange={handleChange}
+              required
             />
           </div>
         </div>

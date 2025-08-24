@@ -22,6 +22,29 @@ router.post('/saveprofile', upload.single('profile_photo'), async (req, res) => 
     }
 });
 
+router.put('/updateprofile', upload.single('profile_photo'), async (req, res) => {
+    const { id_user, neighbourhood, city, CEP, UF, about } = req.body;
+
+    try {
+        if (req.file) {
+            await db.none(
+                'UPDATE User_Profile SET neighbourhood=$1, city=$2, CEP=$3, UF=$4, profile_photo=$5, about=$6 WHERE id_user=$7',
+                [neighbourhood, city, CEP, UF, req.file.buffer, about, id_user]
+            );
+        } else {
+            await db.none(
+                'UPDATE User_Profile SET neighbourhood=$1, city=$2, CEP=$3, UF=$4, about=$5 WHERE id_user=$6',
+                [neighbourhood, city, CEP, UF, about, id_user]
+            );
+        }
+
+        res.status(200).json({ message: "Usuário atualizado com sucesso" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Falha ao atualizar usuário" });
+    }
+});
+
 router.get('/getprofile/:iduser', async (req, res) => {
     const { iduser } = req.params;
     try {
