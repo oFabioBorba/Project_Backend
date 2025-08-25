@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 
 const router = express.Router();
-const JWT_SECRET = "lsdfknaba213n12475lfsd" // ESCONDER NO .ENV QUANDO O PROJETO ESTIVER PRONTO
+const JWT_SECRET = "lsdfknaba213n12475lfsd" // ALTERAR E ESCONDER NO .ENV QUANDO O PROJETO ESTIVER PRONTO
 
 router.post("/verifylogin", async (req, res) => {
     const { email, password } = req.body;

@@ -1,20 +1,20 @@
 import "../styles/login.css";
 import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
   const [Message, setMessage] = useState("");
-  const [theme, setTheme] = useState(() => {
-   return localStorage.getItem("theme") || "dark";
-  });
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
-
 
   async function loginUser(Email, Password) {
     try {
@@ -27,35 +27,24 @@ export default function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        try {
-          const token = data.message;
-          const decoded = jwtDecode(token);
+        const token = data.message;
+        const decoded = jwtDecode(token);
 
-          const profile = await fetch(
-            `http://localhost:8080/profile/getprofile/${decoded.userid}`,
-            {
-              method: "GET",
-              headers: { "Content-Type": "application/json" },
-            }
-          );
+        const profile = await fetch(
+          `http://localhost:8080/profile/getprofile/${decoded.userid}`,
+          { method: "GET", headers: { "Content-Type": "application/json" } }
+        );
 
-          localStorage.setItem("token", token);
+        localStorage.setItem("token", token);
 
-          if (profile.status === 200) {
-            setMessage("");
-            setTimeout(() => {
-              window.location.href = "/home";
-            }, 1500);
-          } else if (profile.status === 404) {
-            setMessage("");
-            setTimeout(() => {
-              window.location.href = "/profile";
-            }, 1500);
-          } else {
-            setMessage("Erro desconhecido.");
-          }
-        } catch (error) {
-          console.error("Erro ao decodificar token:", error);
+        if (profile.status === 200) {
+          setMessage("");
+          setTimeout(() => navigate("/home"), 1500);
+        } else if (profile.status === 404) {
+          setMessage("");
+          setTimeout(() => navigate("/profile"), 1500);
+        } else {
+          setMessage("Erro desconhecido.");
         }
       } else {
         setMessage(data.error);
@@ -85,7 +74,6 @@ export default function Login() {
           </button>
         </div>
 
-
         <label htmlFor="email">Email</label>
         <input
           type="email"
@@ -109,7 +97,13 @@ export default function Login() {
         {Message && <p className="error-message">{Message}</p>}
 
         <p className="register-text">
-          Não tem conta? <a href="/sign">Cadastre-se</a>
+          Não tem conta?{" "}
+          <span
+            style={{ color: "var(--primary)", cursor: "pointer" }}
+            onClick={() => navigate("/sign")}
+          >
+            Cadastre-se
+          </span>
         </p>
       </form>
     </div>

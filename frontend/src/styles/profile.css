@@ -142,6 +142,9 @@ textarea:focus {
 :root[data-theme="dark"] textarea:focus {
   background: rgba(255, 255, 255, 0.05);
 }
+:root[data-theme="dark"] h1 {
+  color: #e5e7eb;
+}
 
 input[disabled] {
   opacity: 0.7;
@@ -166,7 +169,7 @@ textarea {
 .actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px; /* espaço entre os botões */
+  gap: 12px; 
   margin-top: 18px;
 }
 
@@ -174,7 +177,7 @@ textarea {
   border: none;
   background: var(--primary);
   color: var(--primary-contrast);
-  padding: 8px 14px; /* menor que antes */
+  padding: 8px 14px;
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
@@ -197,8 +200,14 @@ textarea {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+::root[data-theme="dark"] .user-dropdown{
+  background-color: black;
+}
+
 @media (max-width: 720px) {
   .field {
     grid-column: 1 / -1;
   }
 }
+
+

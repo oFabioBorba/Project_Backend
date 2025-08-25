@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom"; 
 import "../styles/profile.css";
 
 export default function Profile() {
@@ -19,12 +20,14 @@ export default function Profile() {
   });
   const [statusProfile, setStatusProfile] = useState ("")
 
+  const navigate = useNavigate();
+  
  useEffect(() => {
   async function checkAuthAndLoadProfile() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        window.location.href = "/";
+        navigate("/")
         return;
       }
 
@@ -32,7 +35,7 @@ export default function Profile() {
       const now = Date.now() / 1000;
 
       if (decoded.exp && decoded.exp < now) {
-        window.location.href = "/";
+        navigate("/")
         return;
       }
 

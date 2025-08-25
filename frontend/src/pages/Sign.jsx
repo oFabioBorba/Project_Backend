@@ -1,5 +1,6 @@
 import '../styles/sign.css';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Sign() {
   const [username, setUsername] = useState("");
@@ -8,11 +9,10 @@ export default function Sign() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState(""); 
   const [isError, setIsError] = useState(false); 
-  const [theme, setTheme] = useState(() => {
-   return localStorage.getItem("theme") || "dark";
-  });
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
 
-
+  const navigate = useNavigate(); 
+  
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
@@ -57,9 +57,7 @@ export default function Sign() {
       } else if (registerData.message) {
         setMessage("Usuário cadastrado com sucesso! Redirecionando...");
         setIsError(false);
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1500);
+        setTimeout(() => navigate('/'), 1500); 
       } else {
         setMessage("Resposta inesperada do servidor.");
         setIsError(true);
@@ -86,16 +84,15 @@ export default function Sign() {
     <div className="container">
       <form className="sign-form" onSubmit={handleSubmit}>
         <div className="header">
-        <h2>Login</h2>
-        <button
+          <h2>Cadastro</h2>
+          <button
             type="button"
             className="btn-ghost"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        >
+          >
             {theme === "dark" ? "🌞 Claro" : "🌙 Escuro"}
-        </button>
+          </button>
         </div>
-
 
         <label htmlFor="username">Usuário</label>
         <input
@@ -139,7 +136,6 @@ export default function Sign() {
 
         <button type="submit" className="btn-primary">Registrar</button>
 
-
         {message && (
           <p className={isError ? "error-message" : "success-message"}>
             {message}
@@ -147,7 +143,13 @@ export default function Sign() {
         )}
 
         <p className="register-text">
-          Já tem conta? <a href="/">Faça login</a>
+          Já tem conta?{" "}
+          <span
+            style={{ color: "var(--primary)", cursor: "pointer" }}
+            onClick={() => navigate("/")}
+          >
+            Faça login
+          </span>
         </p>
       </form>
     </div>
