@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import MarketplaceNavbar from "../components/navbar";
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom"; 
 import "../styles/home.css";
 
 export default function Home() {
@@ -9,12 +10,14 @@ export default function Home() {
   const [userId, setUserId] = useState();
   const user = { photoUrl: photo };
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     async function checkAuthAndLoadProfile() {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/";
+          navigate("/");
           return;
         }
 
@@ -22,7 +25,7 @@ export default function Home() {
         const now = Date.now() / 1000;
 
         if (decoded.exp && decoded.exp < now) {
-          window.location.href = "/";
+          navigate("/");
           return;
         }
 
@@ -43,13 +46,15 @@ export default function Home() {
             const photoUrl = `data:image/jpeg;base64,${profile.profile_photo}`;
             setPhoto(photoUrl);
           }
+        } if(response.status === 404){
+          navigate('/profile')
         }
       } catch (error) {
         console.log("Erro ao autenticar ou carregar perfil", error);
       }
     }
     checkAuthAndLoadProfile();
-  }, []);
+  }, [navigate]); 
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -59,7 +64,7 @@ export default function Home() {
   return (
     <>
       <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
-        Conteúdo do Market Place
+      Conteúdo do Market Place
     </>
   );
 }

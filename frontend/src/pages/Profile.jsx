@@ -15,6 +15,9 @@ export default function Profile() {
   });
   const [photoPreview, setPhotoPreview] = useState(null);
   const [status, setStatus] = useState({ loading: false, error: "" });
+  const [message, setMessage] = useState ("")
+  const [isError, setIsError] = useState (false);
+  const [hasProfile, setHasProfile] = useState (false)
   const [theme, setTheme] = useState(() => {
    return localStorage.getItem("theme") || "dark";
   });
@@ -63,6 +66,7 @@ export default function Profile() {
           const photoUrl = `data:image/jpeg;base64,${profile.profile_photo}`;
           setPhotoPreview(photoUrl);
         }
+        setHasProfile(true)
       }
     } catch (error) {
       console.log("Erro ao autenticar ou carregar perfil", error);
@@ -70,7 +74,7 @@ export default function Profile() {
   }
 
   checkAuthAndLoadProfile();
-}, []);
+}, [navigate]);
 
 
   useEffect(() => {
@@ -149,14 +153,17 @@ async function handleSubmit(e) {
       });
 
       if (response.ok) {
-        alert("Perfil salvo com sucesso!");
+        setMessage("Perfil salvo com sucesso! Redirecionando...");
+        setTimeout(() => navigate('/home'), 1500); 
       } else {
         const data = await response.json();
-        alert("Erro: " + data.error);
+        setMessage("Erro: " + data.error);
+        setIsError(true);
       }
     } catch (error) {
       console.error(error);
-      alert("Erro ao atualizar perfil");
+      setMessage("Erro ao atualizar perfil");
+      setIsError(true);
     }
   }else{
       try {
@@ -166,14 +173,18 @@ async function handleSubmit(e) {
       });
 
       if (response.ok) {
-        alert("Perfil salvo com sucesso!");
+        setMessage("Perfil salvo com sucesso! Redirecionando...");
+        setIsError(false);
+        setTimeout(() => navigate('/home'), 1500); 
+
       } else {
         const data = await response.json();
-        alert("Erro: " + data.error);
+        setMessage("Erro: " + data.error);
       }
     } catch (error) {
       console.error(error);
-      alert("Erro ao enviar perfil");
+      setMessage("Erro ao enviar perfil");
+      setIsError(true);
     }
   }
 }
@@ -258,7 +269,7 @@ async function handleSubmit(e) {
               id="uf"
               name="uf"
               placeholder="UF"
-              value={form.uf}
+              value={form.uf}AR Baby
               onChange={handleChange}
               disabled
             />
@@ -280,29 +291,27 @@ async function handleSubmit(e) {
 
         {status.loading && <div className="info">Consultando CEP…</div>}
         {status.error && <div className="error">{status.error}</div>}
-
+        {message && (
+          <p className={isError ? "error-message" : "success-message"}>
+            {message}
+          </p>
+        )}
         <div className="actions">
-          <button type="submit" className="btn-primary">
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={!!status.error || form.cep.length !== 8 || form.about === "" || form.photo === null}
+          >
             Salvar
           </button>
-          <button
-            type="button"
-            className="btn-ghost"
-            onClick={() => {
-              setForm({
-                cep: "",
-                neighbourhood: "",
-                city: "",
-                uf: "",
-                about: "",
-                photo: null,
-              });
-              setPhotoPreview(null);
-              setStatus({ loading: false, error: "" });
-            }}
-          >
-            Limpar
+
+          {hasProfile ? (<button type="button" className="btn-ghost" onClick={() => {navigate('/home')}}>
+            Retornar
+          </button>): ( 
+          <button type="button" className="btn-ghost" onClick={() => {localStorage.removeItem("token") ; navigate('/')}}>
+            Sair
           </button>
+        )}
         </div>
       </form>
     </div>

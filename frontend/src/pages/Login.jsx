@@ -92,7 +92,7 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button type="submit" className="btn-primary">Entrar</button>
+        <button type="submit" className="btn-primary" disabled={Email === "" || Password === ""}>Entrar</button>
 
         {Message && <p className="error-message">{Message}</p>}
 

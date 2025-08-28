@@ -108,6 +108,10 @@ input:focus, .search-input:focus {
   border-top-color: white !important;  
 }
 
+:root[data-theme="dark"] form.d-flex input {
+  color: white;
+}
+
 .btn-primary {
   background: var(--primary);
   color: var(--primary-contrast);

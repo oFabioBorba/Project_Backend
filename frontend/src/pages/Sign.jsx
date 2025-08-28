@@ -98,7 +98,6 @@ export default function Sign() {
         <input
           type="text"
           id="username"
-          required
           placeholder="Digite seu usuário"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -108,7 +107,6 @@ export default function Sign() {
         <input
           type="email"
           id="email"
-          required
           placeholder="Digite seu e-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -118,7 +116,6 @@ export default function Sign() {
         <input
           type="password"
           id="password"
-          required
           placeholder="Digite sua senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -128,13 +125,12 @@ export default function Sign() {
         <input
           type="password"
           id="confirm-password"
-          required
           placeholder="Confirme sua senha"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
 
-        <button type="submit" className="btn-primary">Registrar</button>
+        <button type="submit" className="btn-primary" disabled={username === "" || email === "" || password === "" || confirmPassword === ""}>Registrar</button>
 
         {message && (
           <p className={isError ? "error-message" : "success-message"}>
