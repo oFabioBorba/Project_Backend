@@ -7,7 +7,6 @@ import "../styles/home.css";
 export default function Home() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [photo, setPhoto] = useState(null);
-  const [userId, setUserId] = useState();
   const user = { photoUrl: photo };
 
   const navigate = useNavigate();
@@ -28,8 +27,6 @@ export default function Home() {
           navigate("/");
           return;
         }
-
-        setUserId(decoded.userid);
 
         const response = await fetch(
           `http://localhost:8080/profile/getprofile/${decoded.userid}`,
@@ -64,7 +61,7 @@ export default function Home() {
   return (
     <>
       <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
-      Conteúdo do Market Place
+      <button className="Newad" onClick={() => {navigate ('/ad')}}>+</button>
     </>
   );
 }

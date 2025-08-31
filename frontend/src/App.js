@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Home from "./pages/Home";
-import About from "./pages/About";
 import Login from "./pages/Login";
 import Sign from "./pages/Sign";
 import Profile from "./pages/Profile"
+import Ad from "./pages/Ad"
 
 export default function App() {
   return (
@@ -12,9 +12,9 @@ export default function App() {
       <Routes>
         <Route path = "/" element= {<Login />}/>
         <Route path="/home" element={<Home />} />
-        <Route path="/about" element={<About />} />
         <Route path="/sign" element={<Sign />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/ad" element={<Ad />} />
       </Routes>
     </BrowserRouter>
   );

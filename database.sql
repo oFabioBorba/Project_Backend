@@ -15,6 +15,7 @@ CREATE TABLE User_Profile (
     city VARCHAR(50) NOT NULL,
     CEP VARCHAR(8) NOT NULL,
     UF varchar(2) NOT NULL,
+    profile_photo BYTEA NOT NULL,
     About varchar (244),
     CONSTRAINT fk_user_profile
     FOREIGN KEY (id_user)
@@ -22,7 +23,35 @@ CREATE TABLE User_Profile (
 );
 
 
+CREATE TABLE categories (
+    id_category SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
 
+INSERT INTO categories (name) VALUES
+('Serviços Domésticos'),       -- faxina, diarista, encanador, eletricista
+('Aulas e Reforço'),           -- reforço escolar, idiomas, cursos
+('Saúde e Bem-estar'),         -- personal, fisioterapia, massagem
+('Beleza e Cuidados Pessoais'),-- manicure, cabeleireiro, estética
+('Serviços Automotivos'),      -- mecânico, lava-jato, funilaria
+('Tecnologia e Informática'),  -- manutenção de PCs, suporte técnico
+('Eventos e Festas'),          -- DJ, fotógrafo, buffet, decoração
+('Serviços para Pets'),        -- banho e tosa, adestrador, pet sitter
+('Construção e Reparos'),      -- pedreiro, marceneiro, pintor
+('Entrega e Mudanças'),        -- motoboy, carreto, fretes
+('Consultoria e Jurídico')     -- contador, advogado, consultor
 
-
-
+CREATE TABLE advertisement (
+    id_advertisement SERIAL PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_category INT NOT NULL,
+    photo BYTEA,
+    photo2 BYTEA,
+    photo3 BYTEA,
+    photo4 BYTEA,
+    title VARCHAR(150) NOT NULL,
+    description TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_advertisement_user FOREIGN KEY (id_user) REFERENCES Users (id_user),
+    CONSTRAINT fk_aadvertisement_categoria FOREIGN KEY (id_category) REFERENCES categories (id_category)
+);

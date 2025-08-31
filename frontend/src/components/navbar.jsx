@@ -61,6 +61,8 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
           >
             <NavDropdown.Item onClick={() => navigate("/profile")}>Perfil</NavDropdown.Item>
             <NavDropdown.Divider />
+            <NavDropdown.Item>Meus anúncios</NavDropdown.Item>
+            <NavDropdown.Divider />
             <NavDropdown.Item onClick={() => {localStorage.removeItem("token") ; navigate("/");}}>Sair</NavDropdown.Item>
           </NavDropdown>
         </Nav>

@@ -180,6 +180,7 @@ async function handleSubmit(e) {
       } else {
         const data = await response.json();
         setMessage("Erro: " + data.error);
+        setIsError(true)
       }
     } catch (error) {
       console.error(error);
