@@ -142,7 +142,7 @@ input:focus, .search-input:focus {
 }
 
 .Newad {
-  all: unset; /* reseta todos os estilos padrões do botão */
+  all: unset; 
   
   background-color: var(--primary);
   border-radius: 50%;
