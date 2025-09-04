@@ -285,7 +285,6 @@ async function handleSubmit(e) {
               rows={5}
               value={form.about}
               onChange={handleChange}
-              required
             />
           </div>
         </div>

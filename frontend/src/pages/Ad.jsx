@@ -7,36 +7,84 @@ import { jwtDecode } from "jwt-decode";
 export default function Ad() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [photo, setPhoto] = useState([]);
-  const [photos, setPhotos] = useState([]);
-  const [photoPreviews, setPhotoPreviews] = useState([]);
-  const user = { photoUrl: photo };
   const [allCategories, setAllCategories] = useState([]);
-  const [categories, setCateogries] = useState();
+  const [userId, setUserId] = useState();
+  const [message, setMessage] = useState();
+  const [isError, setIsError] = useState();
+
   const [form, setForm] = useState({
-    cep: "",
-    neighbourhood: "",
-    city: "",
-    uf: "",
-    about: "",
-    photo: null,
+    photos: [],
+    photoPreviews: [],
+    userId: "",
+    title: "",
+    description: "",
+    categories: "",
   });
+
+  const user = { photoUrl: photo };
+
   const navigate = useNavigate();
 
   function handlePhoto(e) {
     const files = e.target.files;
     if (!files) return;
 
-    const newFiles = Array.from(files).slice(0, 4 - photos.length);
+    const availableSlots = 4 - form.photos.length;
+    const newFiles = Array.from(files).slice(0, availableSlots);
 
     const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
 
-    setPhotos((prev) => [...prev, ...newFiles]);
-    setPhotoPreviews((prev) => [...prev, ...newPreviews]);
+    setForm((prev) => ({
+      ...prev,
+      photos: [...prev.photos, ...newFiles],
+      photoPreviews: [...prev.photoPreviews, ...newPreviews],
+    }));
   }
 
   function removePhoto(index) {
-    setPhotos((prev) => prev.filter((_, i) => i !== index));
-    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
+    const url = form.photoPreviews[index];
+    if (url) URL.revokeObjectURL(url);
+
+    setForm((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index),
+      photoPreviews: prev.photoPreviews.filter((_, i) => i !== index),
+    }));
+  }
+
+  async function saveAd(e) {
+    e.preventDefault();
+
+    try {
+      const formData = new FormData();
+      formData.append("idUser", userId);
+      formData.append("idCategory", form.categories);
+      formData.append("title", form.title);
+      formData.append("description", form.description);
+
+      form.photos.forEach((file) => {
+        formData.append("photos", file);
+      });
+
+      const response = await fetch("http://localhost:8080/ad", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        setMessage("Anúncio criado com sucesso!");
+        setIsError(false);
+        setTimeout(() => navigate("/home"), 1500);
+      } else {
+        const data = await response.json();
+        setMessage("Erro: " + (data.error || "Erro desconhecido"));
+        setIsError(true);
+      }
+    } catch (error) {
+      console.error(error);
+      setIsError(true);
+      setMessage("Erro ao criar anúncio: " + error.message);
+    }
   }
 
   useEffect(() => {
@@ -55,7 +103,7 @@ export default function Ad() {
           navigate("/");
           return;
         }
-
+        setUserId(decoded.userid);
         const response = await fetch(
           `http://localhost:8080/profile/getprofile/${decoded.userid}`,
           {
@@ -103,11 +151,11 @@ export default function Ad() {
   return (
     <>
       <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
-      <form className="form">
+      <form className="card" style={{ width: 1000}} onSubmit={saveAd}>
         <div className="sendphoto">
           <div className="photopreview" aria-label="Pré-visualização das fotos">
-            {photoPreviews.length > 0 ? (
-              photoPreviews.map((src, index) => (
+            {form.photoPreviews.length > 0 ? (
+              form.photoPreviews.map((src, index) => (
                 <div key={index} className="photo-container">
                   <img key={index} src={src} alt={`Foto ${index + 1}`} />
                   <button
@@ -125,7 +173,9 @@ export default function Ad() {
           </div>
 
           <label
-            className={`btn-outlined ${photos.length >= 4 ? "disabled" : ""}`}
+            className={`btn-outlined ${
+              form.photos.length >= 4 ? "disabled" : ""
+            }`}
           >
             Enviar foto
             <input
@@ -134,7 +184,7 @@ export default function Ad() {
               multiple
               onChange={handlePhoto}
               style={{ display: "none" }}
-              disabled={photos.length >= 4}
+              disabled={form.photos.length >= 4}
             />
           </label>
         </div>
@@ -143,9 +193,12 @@ export default function Ad() {
         <textarea
           id="title"
           name="title"
-          placeholder="Escreva seu título aqui…"
+          placeholder="Escreva seu títulotos aqui…"
           rows={1}
           value={form.title}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, title: e.target.value }))
+          }
           required
           style={{ resize: "none" }}
         />
@@ -157,24 +210,49 @@ export default function Ad() {
           placeholder="Escreva sua descrição aqui…"
           rows={7}
           value={form.description}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, description: e.target.value }))
+          }
           required
           style={{ resize: "none" }}
         />
-        <div>
-<div className="select-container">
-  <select
-    value={categories}
-    onChange={(e) => setCateogries(e.target.value)}
-  >
-    <option value="">Selecione...</option>
-    {allCategories.map((cat) => (
-      <option key={cat.id} value={cat.id}>
-        {cat.name}
-      </option>
-    ))}
-  </select>
-</div>
-
+        <div className="select-container">
+          <select
+            value={form.categories}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, categories: e.target.value }))
+            }
+          >
+            <option value="">Selecione...</option>
+            {allCategories.map((cat) => (
+              <option key={cat.id_category} value={cat.id_category}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="actions">
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={
+              form.title === "" ||
+              form.description === "" ||
+              form.categories === "" ||
+              form.photos.length === 0
+            }
+          >
+            Criar Anúncio
+          </button>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              navigate("/home");
+            }}
+          >
+            Retornar
+          </button>
         </div>
       </form>
     </>

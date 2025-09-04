@@ -48,4 +48,57 @@ router.post("/", (req, res) => {
   });
 });
 
+router.get('/', async (req, res) => {
+  try {
+    const { idcategory, city, name, date } = req.query;
+
+    const filtros = [];
+    const valores = {};
+
+    if (idcategory) {
+      filtros.push('a.id_category = ${idcategory}');
+      valores.idcategory = idcategory;
+    }
+    if (city) {
+      filtros.push('up.city ILIKE ${city}');
+      valores.city = `%${city}%`;
+    }
+    if (name) {
+      filtros.push('a.title ILIKE ${name}');
+      valores.name = `%${name}%`;
+    }
+    if (date) {
+      filtros.push('a.created_at::date = ${date}');
+      valores.date = date;
+    }
+
+    const whereClause = filtros.length ? 'WHERE ' + filtros.join(' AND ') : '';
+
+    const query = `
+      SELECT 
+        a.id_advertisement,
+        a.title,
+        a.description,
+        a.created_at,
+        c.name AS category,
+        u.username,
+        up.city,
+        up.UF
+      FROM advertisement a
+      JOIN Users u ON a.id_user = u.id_user
+      JOIN User_Profile up ON u.id_user = up.id_user
+      JOIN categories c ON a.id_category = c.id_category
+      ${whereClause}
+      ORDER BY a.created_at DESC
+    `;
+
+    const resultado = await db.any(query, valores);
+    res.json(resultado);
+  } catch (error) {
+    console.error('Erro ao buscar anúncios:', error);
+    res.status(500).json({ erro: 'Erro interno ao buscar anúncios' });
+  }
+});
+
+
 export default router;

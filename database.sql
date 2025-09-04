@@ -29,17 +29,17 @@ CREATE TABLE categories (
 );
 
 INSERT INTO categories (name) VALUES
-('Serviços Domésticos'),       -- faxina, diarista, encanador, eletricista
-('Aulas e Reforço'),           -- reforço escolar, idiomas, cursos
-('Saúde e Bem-estar'),         -- personal, fisioterapia, massagem
-('Beleza e Cuidados Pessoais'),-- manicure, cabeleireiro, estética
-('Serviços Automotivos'),      -- mecânico, lava-jato, funilaria
-('Tecnologia e Informática'),  -- manutenção de PCs, suporte técnico
-('Eventos e Festas'),          -- DJ, fotógrafo, buffet, decoração
-('Serviços para Pets'),        -- banho e tosa, adestrador, pet sitter
-('Construção e Reparos'),      -- pedreiro, marceneiro, pintor
-('Entrega e Mudanças'),        -- motoboy, carreto, fretes
-('Consultoria e Jurídico')     -- contador, advogado, consultor
+('🏠 Serviços Domésticos'),       -- faxina, diarista, encanador, eletricista
+('📚 Aulas e Reforço'),           -- reforço escolar, idiomas, cursos
+('💪 Saúde e Bem-estar'),         -- personal, fisioterapia, massagem
+('💇‍♀️ Beleza e Cuidados Pessoais'),-- manicure, cabeleireiro, estética
+('🚗 Serviços Automotivos'),      -- mecânico, lava-jato, funilaria
+('💻 Tecnologia e Informática'),  -- manutenção de PCs, suporte técnico
+('🎉 Eventos e Festas'),          -- DJ, fotógrafo, buffet, decoração
+('🐶 Serviços para Pets'),        -- banho e tosa, adestrador, pet sitter
+('🏗️ Construção e Reparos'),      -- pedreiro, marceneiro, pintor
+('🚚 Entrega e Mudanças'),        -- motoboy, carreto, fretes
+('⚖️ Consultoria e Jurídico');    -- contador, advogado, consultor
 
 CREATE TABLE advertisement (
     id_advertisement SERIAL PRIMARY KEY,
