@@ -193,7 +193,7 @@ export default function Ad() {
         <textarea
           id="title"
           name="title"
-          placeholder="Escreva seu título aqui…"
+          placeholder="Escreva seu títulotos aqui…"
           rows={1}
           value={form.title}
           onChange={(e) =>
