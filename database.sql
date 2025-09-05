@@ -17,6 +17,7 @@ CREATE TABLE User_Profile (
     UF varchar(2) NOT NULL,
     profile_photo BYTEA NOT NULL,
     About varchar (244),
+    feedback INT DEFAULT 0,
     CONSTRAINT fk_user_profile
     FOREIGN KEY (id_user)
     REFERENCES Users (id_user)
