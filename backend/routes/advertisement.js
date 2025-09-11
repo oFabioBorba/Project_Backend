@@ -50,7 +50,7 @@ router.post("/", (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { idcategory, city, name, date, page, limit: queryLimit } = req.query;
+    const { idcategory, city, uf, name, date, page, limit: queryLimit } = req.query;
     const limit = queryLimit ? parseInt(queryLimit) : 7;
     const offset = page ? (parseInt(page) - 1) * limit : 0;
 
@@ -72,6 +72,10 @@ router.get("/", async (req, res) => {
     if (date) {
       filtros.push("a.created_at::date = ${date}");
       valores.date = date;
+    }
+    if (uf) {
+      filtros.push("up.UF ILIKE ${uf}");
+      valores.uf = `%${uf}%`;
     }
 
     const whereClause = filtros.length ? "WHERE " + filtros.join(" AND ") : "";

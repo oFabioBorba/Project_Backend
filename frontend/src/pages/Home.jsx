@@ -182,46 +182,62 @@ export default function Home() {
         <div className="FilterCity">
           <h2>Na sua cidade</h2>
           <div className="ads-container" style={{ alignItems: 'center' }}>
-            <button className="nav-arrow-btn" onClick={() => setPageCity(prev => Math.max(1, prev - 1))} disabled={pageCity === 1}> {'<'} </button>
-            {adsByCity.map((ad) => (
-              <AdCard
-                key={ad.id_advertisement}
-                ad={ad}
-                onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
-              />
-            ))}
-            <button
-              className="nav-arrow-btn"
-              onClick={async () => {
-                if (await checkNextPageCity()) setPageCity(pageCity + 1);
-              }}
-              disabled={disablePaginationCity === true}
-            >
-              {'>'}
-            </button>
+            {adsByCity.length === 0 ? (
+              <div className="no-ads-message">
+                Nenhum anúncio encontrado na sua cidade.
+              </div>
+            ) : (
+              <>
+                <button className="nav-arrow-btn" onClick={() => setPageCity(prev => Math.max(1, prev - 1))} disabled={pageCity === 1}> {'<'} </button>
+                {adsByCity.map((ad) => (
+                  <AdCard
+                    key={ad.id_advertisement}
+                    ad={ad}
+                    onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
+                  />
+                ))}
+                <button
+                  className="nav-arrow-btn"
+                  onClick={async () => {
+                    if (await checkNextPageCity()) setPageCity(pageCity + 1);
+                  }}
+                  disabled={disablePaginationCity === true}
+                >
+                  {'>'}
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         <div className="FilterRating">
           <h2>Melhores Avaliados</h2>
           <div className="ads-container" style={{ alignItems: 'center' }}>
-            <button className="nav-arrow-btn" onClick={() => setPageRating(prev => Math.max(1, prev - 1))} disabled={pageRating === 1}> {'<'} </button>
-            {adsByRating.map((ad) => (
-              <AdCard
-                key={ad.id_advertisement}
-                ad={ad}
-                onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
-              />
-            ))}
-            <button
-              className="nav-arrow-btn"
-              onClick={async () => {  
-                if (await checkNextPageRating()) setPageRating(pageRating + 1);
-              }}
-              disabled={disablePaginationRating === true}
-            >
-              {'>'}
-            </button>
+            {adsByRating.length === 0 ? (
+              <div className="no-ads-message">
+                Nenhum anúncio encontrado nos melhores avaliados.
+              </div>
+            ) : (
+              <>
+                <button className="nav-arrow-btn" onClick={() => setPageRating(prev => Math.max(1, prev - 1))} disabled={pageRating === 1}> {'<'} </button>
+                {adsByRating.map((ad) => (
+                  <AdCard
+                    key={ad.id_advertisement}
+                    ad={ad}
+                    onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
+                  />
+                ))}
+                <button
+                  className="nav-arrow-btn"
+                  onClick={async () => {  
+                    if (await checkNextPageRating()) setPageRating(pageRating + 1);
+                  }}
+                  disabled={disablePaginationRating === true}
+                >
+                  {'>'}
+                </button>
+              </>
+            )}
           </div>
         </div>
         </div>

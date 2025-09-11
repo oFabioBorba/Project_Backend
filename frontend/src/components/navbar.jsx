@@ -30,7 +30,7 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
           className="d-flex flex-grow-1 mx-3"
           onSubmit={e => {
             e.preventDefault();
-            navigate(`/buscar?titulo=${search}`);
+            window.location.href = `/buscar?titulo=${search}`;
           }}
         >
           <Form.Control

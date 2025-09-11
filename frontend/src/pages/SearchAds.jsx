@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import MarketplaceNavbar from "../components/navbar";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
-import AdCard from "../components/AdCard";
 import "../styles/home.css";
 import { useSearchParams } from "react-router-dom";
-
+import AdSearchCards from "../components/AdSearchCards";
 
 export default function SearcAds() {
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
@@ -17,6 +16,7 @@ export default function SearcAds() {
     const title = searchParams.get("titulo");
     const city = searchParams.get("cidade");
     const UF = searchParams.get("estado");
+    const [cards, setCards] = useState([]);
 
   const navigate = useNavigate();
 
@@ -81,10 +81,45 @@ export default function SearcAds() {
     listcategories();
   }, []);
 
+  useEffect(() => {
+    async function fetchAds() {
+      try {
+        let url = "http://localhost:8080/ad?";
+        if (categoryId) url += `idcategory=${categoryId}&`;
+        if (title) url += `name=${title}&`;
+        if (city) url += `city=${city}&`;
+        if (UF) url += `uf=${UF}&`;
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          setCards(data);
+          console.log(data);
+        } else {
+          console.log("Erro ao buscar anúncios");
+        }
+      } catch (error) {
+        console.log("Erro ao buscar anúncios", error);
+      }
+  }
+fetchAds();}, [])
 
   return (
     <>
       <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
+      <main style={{ paddingTop: "200px" }}>
+      <div className="page-content">
+        <div className="ad-search-list">
+          {cards.map((ad) => (
+            <AdSearchCards
+              key={ad.id_advertisement}
+              ad={ad}
+              onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
+            />
+          ))}
+        </div>
+      </div>
+      </main>
     </>
   );
 }
