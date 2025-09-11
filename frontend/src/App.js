@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Sign from "./pages/Sign";
 import Profile from "./pages/Profile"
 import Ad from "./pages/Ad"
+import SearcAds from "./pages/SearchAds"; 
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/sign" element={<Sign />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/ad" element={<Ad />} />
+        <Route path="/buscar" element={<SearcAds />} />
       </Routes>
     </BrowserRouter>
   );

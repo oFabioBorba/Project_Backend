@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom"; 
-import React from "react";
+import { useState  } from "react";
 import { Navbar, Container, Nav, NavDropdown, Form, Button, Image } from "react-bootstrap";
 
 export default function MarketplaceNavbar({ user, theme, setTheme }) {
-   const navigate = useNavigate();
+  const [search, setSearch] = useState(); 
+  
+  const navigate = useNavigate();
 
   return (
     <Navbar
@@ -24,15 +26,23 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
         </Navbar.Brand>
 
         {/* Campo de busca */}
-        <Form className="d-flex flex-grow-1 mx-3">
+        <Form
+          className="d-flex flex-grow-1 mx-3"
+          onSubmit={e => {
+            e.preventDefault();
+            window.location.href = `/buscar?titulo=${search}`;
+          }}
+        >
           <Form.Control
             type="search"
             placeholder="Buscar serviços..."
             className="me-2"
             aria-label="Search"
             style={{ borderRadius: "8px" }}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
-          <Button variant="outline-primary">Buscar</Button>
+          <Button variant="outline-primary" type="submit">Buscar</Button>
         </Form>
 
         {/* Avatar e tema */}

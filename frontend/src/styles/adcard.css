@@ -1,0 +1,141 @@
+.ad-search-list {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+.ad-search-card {
+  width: 100%;
+  min-width: 320px;
+  max-width: none;
+}
+
+.ad-search-card {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  background: var(--card, #fff);
+  color: var(--text, #111);
+  border-radius: 10px;
+  box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,0.08));
+  margin: 18px 0;
+  padding: 18px 22px;
+  width: 700px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.ad-search-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  transform: translateY(-2px) scale(1.01);
+}
+
+.ad-search-card-photo {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.ad-search-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ad-search-card-content h3 {
+  font-size: 1.2rem;
+  margin: 0 0 4px 0;
+  color: var(--text, #111);
+}
+
+.ad-search-desc {
+  font-size: 1rem;
+  color: var(--muted, #555);
+  margin-bottom: 6px;
+}
+
+.ad-search-info {
+  display: flex;
+  gap: 18px;
+  font-size: 0.95rem;
+  color: var(--muted, #555);
+  margin-bottom: 8px;
+}
+
+.ad-search-date {
+  font-weight: 500;
+}
+
+.ad-search-user {
+  font-style: italic;
+}
+
+.ad-search-card-content button {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 6px 14px;
+  border: none;
+  background: var(--primary, #007bff);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.ad-search-card-content button:hover {
+  background: #0056b3;
+}
+
+.ad-card {
+  border-radius: 8px;
+  overflow: hidden;
+  width: 220px;
+  margin: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  background: var(--card, #fff);
+  color: var(--text, #111);
+  box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,0.08));
+}
+
+.ad-card:hover {
+  transform: scale(1.03);
+}
+
+.ad-card-photo {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.ad-card-content {
+  padding: 10px;
+}
+
+.ad-card-content h3 {
+  font-size: 16px;
+  margin: 0 0 5px;
+}
+
+.ad-card-content p {
+  font-size: 14px;
+  color: var(--muted, #555);
+}
+
+.ad-card-content button {
+  margin-top: 10px;
+  padding: 6px 10px;
+  border: none;
+  background: var(--primary, #007bff);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}

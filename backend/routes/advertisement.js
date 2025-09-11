@@ -48,31 +48,37 @@ router.post("/", (req, res) => {
   });
 });
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const { idcategory, city, name, date } = req.query;
+    const { idcategory, city, uf, name, date, page, limit: queryLimit } = req.query;
+    const limit = queryLimit ? parseInt(queryLimit) : 7;
+    const offset = page ? (parseInt(page) - 1) * limit : 0;
 
     const filtros = [];
     const valores = {};
 
     if (idcategory) {
-      filtros.push('a.id_category = ${idcategory}');
+      filtros.push("a.id_category = ${idcategory}");
       valores.idcategory = idcategory;
     }
     if (city) {
-      filtros.push('up.city ILIKE ${city}');
+      filtros.push("up.city ILIKE ${city}");
       valores.city = `%${city}%`;
     }
     if (name) {
-      filtros.push('a.title ILIKE ${name}');
+      filtros.push("a.title ILIKE ${name}");
       valores.name = `%${name}%`;
     }
     if (date) {
-      filtros.push('a.created_at::date = ${date}');
+      filtros.push("a.created_at::date = ${date}");
       valores.date = date;
     }
+    if (uf) {
+      filtros.push("up.UF ILIKE ${uf}");
+      valores.uf = `%${uf}%`;
+    }
 
-    const whereClause = filtros.length ? 'WHERE ' + filtros.join(' AND ') : '';
+    const whereClause = filtros.length ? "WHERE " + filtros.join(" AND ") : "";
 
     const query = `
       SELECT 
@@ -80,9 +86,14 @@ router.get('/', async (req, res) => {
         a.title,
         a.description,
         a.created_at,
+        a.photo,
+        a.photo2,
+        a.photo3,
+        a.photo4,
         c.name AS category,
         u.username,
         up.city,
+        up.feedback,
         up.UF
       FROM advertisement a
       JOIN Users u ON a.id_user = u.id_user
@@ -90,15 +101,26 @@ router.get('/', async (req, res) => {
       JOIN categories c ON a.id_category = c.id_category
       ${whereClause}
       ORDER BY a.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
     const resultado = await db.any(query, valores);
-    res.json(resultado);
+
+    const anuncios = resultado.map((ad) => ({
+      ...ad,
+      photo: ad.photo ? ad.photo.toString("base64") : null,
+      photo2: ad.photo2 ? ad.photo2.toString("base64") : null,
+      photo3: ad.photo3 ? ad.photo3.toString("base64") : null,
+      photo4: ad.photo4 ? ad.photo4.toString("base64") : null,
+    }));
+
+    res.json(anuncios);
   } catch (error) {
-    console.error('Erro ao buscar anúncios:', error);
-    res.status(500).json({ erro: 'Erro interno ao buscar anúncios' });
+    console.error("Erro ao buscar anúncios:", error);
+    res.status(500).json({ erro: "Erro interno ao buscar anúncios" });
   }
 });
+
 
 
 export default router;
