@@ -6,6 +6,7 @@ import Sign from "./pages/Sign";
 import Profile from "./pages/Profile"
 import Ad from "./pages/Ad"
 import SearcAds from "./pages/SearchAds"; 
+import OpendAd from "./pages/OpenAd";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/ad" element={<Ad />} />
         <Route path="/buscar" element={<SearcAds />} />
+        <Route path="/ad/:id_advertisement" element={<OpendAd />} />
       </Routes>
     </BrowserRouter>
   );

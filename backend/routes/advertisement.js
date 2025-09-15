@@ -50,13 +50,18 @@ router.post("/", (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { idcategory, city, uf, name, date, page, limit: queryLimit } = req.query;
+    const { idcategory, city, id_advertisement, uf, name, date, page, limit: queryLimit } = req.query;
     const limit = queryLimit ? parseInt(queryLimit) : 7;
     const offset = page ? (parseInt(page) - 1) * limit : 0;
 
     const filtros = [];
     const valores = {};
 
+    if (id_advertisement) {
+      filtros.push("a.id_advertisement = ${id_advertisement}");
+      valores.id_advertisement = id_advertisement;
+    }
+    
     if (idcategory) {
       filtros.push("a.id_category = ${idcategory}");
       valores.idcategory = idcategory;
@@ -93,6 +98,7 @@ router.get("/", async (req, res) => {
         c.name AS category,
         u.username,
         up.city,
+        up.profile_photo,
         up.feedback,
         up.UF
       FROM advertisement a
@@ -103,11 +109,12 @@ router.get("/", async (req, res) => {
       ORDER BY a.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
-
+    
     const resultado = await db.any(query, valores);
-
+    
     const anuncios = resultado.map((ad) => ({
       ...ad,
+      profile_photo: ad.profile_photo ? ad.profile_photo.toString("base64") : null,
       photo: ad.photo ? ad.photo.toString("base64") : null,
       photo2: ad.photo2 ? ad.photo2.toString("base64") : null,
       photo3: ad.photo3 ? ad.photo3.toString("base64") : null,

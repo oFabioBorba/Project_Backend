@@ -6,7 +6,6 @@ export default function AdSearchCard({ ad, onClick }) {
     ? `data:image/jpeg;base64,${ad.photo}`
     : "/placeholder.jpg";
 
-  // Formatar data para dd/mm/yyyy
   function formatDate(iso) {
     if (!iso) return "";
     const d = new Date(iso);
@@ -17,7 +16,7 @@ export default function AdSearchCard({ ad, onClick }) {
     <div className="ad-search-card" onClick={onClick}>
       <img src={photoUrl} alt={ad.title} className="ad-search-card-photo" />
       <div className="ad-search-card-content">
-        <h3>{ad.title}</h3>
+        <h3>{ad.title}</h3> 
         <p className="ad-search-desc">{ad.description?.slice(0, 200)}...</p>
         <div className="ad-search-info">
           <span className="ad-search-date">{formatDate(ad.created_at)}</span>
