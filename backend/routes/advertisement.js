@@ -50,12 +50,17 @@ router.post("/", (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { idcategory, city, id_advertisement, uf, name, date, page, limit: queryLimit } = req.query;
+    const { idcategory, city, id_advertisement, uf, name, date, page, id_user, limit: queryLimit } = req.query;
     const limit = queryLimit ? parseInt(queryLimit) : 7;
     const offset = page ? (parseInt(page) - 1) * limit : 0;
 
     const filtros = [];
     const valores = {};
+
+    if (id_user){
+      filtros.push("a.id_user = ${id_user}");
+      valores.id_user = id_user;
+    }
 
     if (id_advertisement) {
       filtros.push("a.id_advertisement = ${id_advertisement}");
@@ -100,7 +105,7 @@ router.get("/", async (req, res) => {
         up.city,
         up.profile_photo,
         up.feedback,
-        up.UF
+        up.UF as UF
       FROM advertisement a
       JOIN Users u ON a.id_user = u.id_user
       JOIN User_Profile up ON u.id_user = up.id_user
@@ -128,6 +133,18 @@ router.get("/", async (req, res) => {
   }
 });
 
-
+router.delete("/:id_advertisement", async (req, res) => {
+  const { id_advertisement } = req.params;
+  try {
+    const result = await db.result("DELETE FROM advertisement WHERE id_advertisement = $1", [id_advertisement]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Anúncio não encontrado" });
+    }
+    res.status(200).json({ message: "Anúncio deletado com sucesso" });
+  } catch (error) {
+    console.error("Erro ao deletar anúncio:", error);
+    res.status(500).json({ error: "Erro interno ao deletar anúncio" });
+  }
+});
 
 export default router;

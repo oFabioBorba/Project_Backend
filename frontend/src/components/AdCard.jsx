@@ -4,7 +4,7 @@ import "../styles/adcard.css";
 export default function AdCard({ ad, onClick }) {
   const photoUrl = ad.photo
     ? `data:image/jpeg;base64,${ad.photo}`
-    : "/placeholder.jpg"; 
+    : "/placeholder.jpg";
 
   return (
     <div className="ad-card" onClick={onClick}>

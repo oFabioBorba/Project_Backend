@@ -121,7 +121,7 @@ export default function Home() {
               <span>{renderStars(ad.feedback)}</span>
             </div>
             <span><b>Categoria:</b> {ad.category}</span>
-            <span><b>Cidade:</b> {ad.city} - {ad.UF}</span>
+            <span><b>Cidade:</b> {ad.city} - {ad.uf}</span>
             <span><b>Data:</b> {new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
           <button className="openadpage-chat-btn">Iniciar conversa</button>

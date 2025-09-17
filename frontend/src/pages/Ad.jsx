@@ -151,7 +151,7 @@ export default function Ad() {
   return (
     <>
       <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
-      <form className="card" style={{ width: 1000}} onSubmit={saveAd}>
+      <form className="card" style={{ width: 1000 }} onSubmit={saveAd}>
         <div className="sendphoto">
           <div className="photopreview" aria-label="Pré-visualização das fotos">
             {form.photoPreviews.length > 0 ? (

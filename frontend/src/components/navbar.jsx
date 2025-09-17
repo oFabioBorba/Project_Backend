@@ -1,10 +1,18 @@
-import { useNavigate } from "react-router-dom"; 
-import { useState  } from "react";
-import { Navbar, Container, Nav, NavDropdown, Form, Button, Image } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  Navbar,
+  Container,
+  Nav,
+  NavDropdown,
+  Form,
+  Button,
+  Image,
+} from "react-bootstrap";
 
 export default function MarketplaceNavbar({ user, theme, setTheme }) {
-  const [search, setSearch] = useState(); 
-  
+  const [search, setSearch] = useState();
+
   const navigate = useNavigate();
 
   return (
@@ -19,16 +27,26 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
         boxShadow: "var(--shadow)",
       }}
     >
-      <Container fluid className="d-flex justify-content-between align-items-center">
+      <Container
+        fluid
+        className="d-flex justify-content-between align-items-center"
+      >
         {/* Logo */}
-        <Navbar.Brand onClick={() => navigate("/home")} style={{ fontWeight: "bold", color: "var(--text)", cursor:"pointer" }}>
+        <Navbar.Brand
+          onClick={() => navigate("/home")}
+          style={{
+            fontWeight: "bold",
+            color: "var(--text)",
+            cursor: "pointer",
+          }}
+        >
           SpeedTrade
         </Navbar.Brand>
 
         {/* Campo de busca */}
         <Form
           className="d-flex flex-grow-1 mx-3"
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
             window.location.href = `/buscar?titulo=${search}`;
           }}
@@ -42,7 +60,9 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <Button variant="outline-primary" type="submit">Buscar</Button>
+          <Button variant="outline-primary" type="submit">
+            Buscar
+          </Button>
         </Form>
 
         {/* Avatar e tema */}
@@ -69,11 +89,22 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
             id="user-dropdown"
             align="end"
           >
-            <NavDropdown.Item onClick={() => navigate("/profile")}>Perfil</NavDropdown.Item>
+            <NavDropdown.Item onClick={() => navigate("/profile")}>
+              Perfil
+            </NavDropdown.Item>
             <NavDropdown.Divider />
-            <NavDropdown.Item>Meus anúncios</NavDropdown.Item>
+            <NavDropdown.Item onClick={() => navigate("/MyAds")}>
+              Meus anúncios
+            </NavDropdown.Item>
             <NavDropdown.Divider />
-            <NavDropdown.Item onClick={() => {localStorage.removeItem("token") ; navigate("/");}}>Sair</NavDropdown.Item>
+            <NavDropdown.Item
+              onClick={() => {
+                localStorage.removeItem("token");
+                navigate("/");
+              }}
+            >
+              Sair
+            </NavDropdown.Item>
           </NavDropdown>
         </Nav>
       </Container>
