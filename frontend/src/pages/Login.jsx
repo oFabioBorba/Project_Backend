@@ -7,7 +7,9 @@ export default function Login() {
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
   const [Message, setMessage] = useState("");
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("theme") || "dark"
+  );
 
   const navigate = useNavigate();
 
@@ -92,7 +94,13 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button type="submit" className="btn-primary" disabled={Email === "" || Password === ""}>Entrar</button>
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={Email === "" || Password === ""}
+        >
+          Entrar
+        </button>
 
         {Message && <p className="error-message">{Message}</p>}
 

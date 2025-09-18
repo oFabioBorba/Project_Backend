@@ -50,13 +50,23 @@ router.post("/", (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { idcategory, city, uf, name, date, page, limit: queryLimit } = req.query;
+    const { idcategory, city, id_advertisement, uf, name, date, page, id_user, limit: queryLimit } = req.query;
     const limit = queryLimit ? parseInt(queryLimit) : 7;
     const offset = page ? (parseInt(page) - 1) * limit : 0;
 
     const filtros = [];
     const valores = {};
 
+    if (id_user){
+      filtros.push("a.id_user = ${id_user}");
+      valores.id_user = id_user;
+    }
+
+    if (id_advertisement) {
+      filtros.push("a.id_advertisement = ${id_advertisement}");
+      valores.id_advertisement = id_advertisement;
+    }
+    
     if (idcategory) {
       filtros.push("a.id_category = ${idcategory}");
       valores.idcategory = idcategory;
@@ -93,8 +103,9 @@ router.get("/", async (req, res) => {
         c.name AS category,
         u.username,
         up.city,
+        up.profile_photo,
         up.feedback,
-        up.UF
+        up.UF as UF
       FROM advertisement a
       JOIN Users u ON a.id_user = u.id_user
       JOIN User_Profile up ON u.id_user = up.id_user
@@ -103,11 +114,12 @@ router.get("/", async (req, res) => {
       ORDER BY a.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
-
+    
     const resultado = await db.any(query, valores);
-
+    
     const anuncios = resultado.map((ad) => ({
       ...ad,
+      profile_photo: ad.profile_photo ? ad.profile_photo.toString("base64") : null,
       photo: ad.photo ? ad.photo.toString("base64") : null,
       photo2: ad.photo2 ? ad.photo2.toString("base64") : null,
       photo3: ad.photo3 ? ad.photo3.toString("base64") : null,
@@ -121,6 +133,18 @@ router.get("/", async (req, res) => {
   }
 });
 
-
+router.delete("/:id_advertisement", async (req, res) => {
+  const { id_advertisement } = req.params;
+  try {
+    const result = await db.result("DELETE FROM advertisement WHERE id_advertisement = $1", [id_advertisement]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Anúncio não encontrado" });
+    }
+    res.status(200).json({ message: "Anúncio deletado com sucesso" });
+  } catch (error) {
+    console.error("Erro ao deletar anúncio:", error);
+    res.status(500).json({ error: "Erro interno ao deletar anúncio" });
+  }
+});
 
 export default router;

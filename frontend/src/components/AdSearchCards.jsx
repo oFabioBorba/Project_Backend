@@ -6,11 +6,10 @@ export default function AdSearchCard({ ad, onClick }) {
     ? `data:image/jpeg;base64,${ad.photo}`
     : "/placeholder.jpg";
 
-  // Formatar data para dd/mm/yyyy
   function formatDate(iso) {
     if (!iso) return "";
     const d = new Date(iso);
-    return d.toLocaleDateString('pt-BR');
+    return d.toLocaleDateString("pt-BR");
   }
 
   return (
