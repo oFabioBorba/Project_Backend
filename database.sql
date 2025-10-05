@@ -56,3 +56,21 @@ CREATE TABLE advertisement (
     CONSTRAINT fk_advertisement_user FOREIGN KEY (id_user) REFERENCES Users (id_user),
     CONSTRAINT fk_aadvertisement_categoria FOREIGN KEY (id_category) REFERENCES categories (id_category)
 );
+
+CREATE TABLE conversations (
+    id SERIAL PRIMARY KEY,
+    user_one_id INT REFERENCES Users(id_user) ON DELETE CASCADE,
+    user_two_id INT REFERENCES Users(id_user) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE (user_one_id, user_two_id) 
+);
+
+CREATE TABLE messages (
+    id SERIAL PRIMARY KEY,
+    conversation_id INT REFERENCES conversations(id) ON DELETE CASCADE,
+    sender_id INT REFERENCES Users(id_user) ON DELETE SET NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    is_read BOOLEAN DEFAULT FALSE
+);
+

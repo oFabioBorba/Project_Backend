@@ -97,6 +97,12 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
               Meus anúncios
             </NavDropdown.Item>
             <NavDropdown.Divider />
+            <NavDropdown.Item onClick={() => navigate("/chat")}>
+              Minhas conversas
+            </NavDropdown.Item>
+            <NavDropdown.Divider />
+
+            
             <NavDropdown.Item
               onClick={() => {
                 localStorage.removeItem("token");
