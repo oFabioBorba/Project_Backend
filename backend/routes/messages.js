@@ -1,18 +1,26 @@
 import express from "express";
 import db from "../db.js";
+import multer from "multer";
 
 const router = express.Router();
 
-router.get("/conversation", async (req, res) => {
-  const { user_one_id, user_two_id } = req.query;
+router.get("/conversation/:conversation_id", async (req, res) => {
+  const { conversation_id } = req.params; 
+  
   try {
     const messages =
-      await db.manyOrNone(`SELECT m.id, m.sender_id, m.content, m.created_at, m.is_read
-   FROM messages m
-   JOIN conversations c ON c.id = m.conversation_id
-   WHERE (c.user_one_id = $1 AND c.user_two_id = $2)
-   OR (c.user_one_id = $2 AND c.user_two_id = $1)
-   ORDER BY m.created_at DESC;`, [user_one_id, user_two_id]);
+      await db.manyOrNone(`
+        SELECT 
+            m.id, 
+            m.conversation_id,
+            m.sender_id, 
+            m.content, 
+            m.created_at, 
+            m.is_read
+        FROM messages m
+        WHERE m.conversation_id = $1
+        ORDER BY m.created_at ASC;`, [conversation_id]);
+        
     res.status(200).json(messages);
   } catch (error) {
     console.error(error);
@@ -62,6 +70,55 @@ router.put("/readmessage", async (req, res) => {
     res.status(500).json({error: "Falha ao ler as mensagens"})
   }
 })
+
+router.get("/conversations/:user_id", async (req, res) => {
+  const { user_id } = req.params; 
+
+  try {
+    const conversations = await db.manyOrNone(`
+      SELECT
+        c.id AS conversation_id,
+        c.created_at,
+        CASE
+          WHEN c.user_one_id = $1 THEN c.user_two_id
+          ELSE c.user_one_id
+        END AS other_user_id,
+        u.username,
+        p.profile_photo
+        
+      FROM conversations c
+      
+      JOIN User_Profile p ON p.id_user = 
+        CASE
+          WHEN c.user_one_id = $1 THEN c.user_two_id
+          ELSE c.user_one_id
+        END
+        
+      JOIN Users u ON u.id_user = 
+        CASE
+          WHEN c.user_one_id = $1 THEN c.user_two_id
+          ELSE c.user_one_id
+        END
+        
+      WHERE c.user_one_id = $1 OR c.user_two_id = $1
+      
+      ORDER BY c.created_at DESC; 
+    `, [user_id]);
+    
+    const formattedConversations = conversations.map(conv => ({
+        ...conv,
+        profile_photo: conv.profile_photo 
+          ? conv.profile_photo.toString('base64') 
+          : null 
+    }));
+
+    res.status(200).json(formattedConversations);
+
+  } catch (error) {
+    console.error("Erro ao buscar conversas:", error);
+    res.status(500).json({ error: "Erro ao buscar a lista de conversas" });
+  }
+});
 
 
 export default router;
