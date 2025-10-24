@@ -122,7 +122,46 @@ export default function Chat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+useEffect(() => {
+    if (!userId) return;
 
+    const ws = new WebSocket("ws://localhost:8080");
+
+    ws.onopen = () => {
+      console.log("✅ Conectado ao WebSocket");
+      ws.send(JSON.stringify({ type: "SET_USER", userId }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "NEW_MESSAGE") {
+          const newMsg = msg.data;
+
+          if (selectedConv && newMsg.conversation_id === selectedConv.conversation_id) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                sender_id: newMsg.sender_id,
+                content: newMsg.content,
+                isMine: newMsg.sender_id === userId,
+                created_at: newMsg.created_at,
+                text: newMsg.content,
+              },
+            ]);
+          } else {
+            console.log("Nova mensagem em outra conversa:", newMsg);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao processar mensagem WS:", err);
+      }
+    };
+
+    ws.onclose = () => console.log("🔌 Conexão WebSocket fechada");
+
+    return () => ws.close();
+  }, [userId, selectedConv]);
   async function sendMessage(e) {
     e.preventDefault();
     const conversationId = selectedConv?.conversation_id;
@@ -161,7 +200,7 @@ export default function Chat() {
     <>
       <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
       
-      <div className="main-content-wrapper" style={{ paddingTop: '56px' }}>
+      <div className="main-content-wrapper" style={{ paddingTop: '56px', width: '300%', marginLeft: '-300px' }}>
         <div className="chatpage-container"> 
           <div className="chatpage-sidebar">
             <h3>Conversas</h3>
