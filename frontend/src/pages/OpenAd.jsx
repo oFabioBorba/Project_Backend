@@ -13,6 +13,7 @@ export default function Home() {
   const [currentPhoto, setCurrentPhoto] = useState(0);
   const user = { photoUrl: photo };
   const { id_advertisement } = useParams();
+  const [userid, setUserid] = useState(null);
 
   const navigate = useNavigate();
 
@@ -32,7 +33,7 @@ export default function Home() {
           navigate("/");
           return;
         }
-
+        setUserid(decoded.userid);
         const response = await fetch(
           `http://localhost:8080/profile/getprofile/${decoded.userid}`,
           {
@@ -97,6 +98,23 @@ export default function Home() {
     }
     return stars;
   }
+   async function startChat() {
+        try {
+      const response = await fetch(`http://localhost:8080/messages/startconversation`, { 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          user_one_id: userid,  
+          user_two_id: ad.id_user
+        }),
+      });
+
+        const data = await response.json();
+        navigate("/chat")
+      } catch (error) {
+      console.error("Erro ao iniciar conversa", error);
+    }
+  }
 
   return( 
     <div>
@@ -124,7 +142,7 @@ export default function Home() {
             <span><b>Cidade:</b> {ad.city} - {ad.uf}</span>
             <span><b>Data:</b> {new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
           </div>
-          <button className="openadpage-chat-btn">Iniciar conversa</button>
+          <button className="openadpage-chat-btn" onClick={startChat}>Iniciar conversa</button>
         </div>
       </div>
     </div>

@@ -51,15 +51,37 @@ router.post("/startconversation", async (req, res) => {
 });
 
 router.post("/sendmessage", async (req, res) => {
-  const {conversation_id, sender_id, content} = req.body;
-  try{
-    const response = await db.oneOrNone("INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1, $2, $3)", [conversation_id, sender_id, content])
-    res.status(200).json({message: "Mensagem enviada com sucesso"})
-  }catch(error){
-    console.error(error)
-    res.status(500).json({error: "Houve um erro ao enviar a mensagem"})
+  const { conversation_id, sender_id, content } = req.body;
+
+  try {
+    await db.none(
+      "INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1, $2, $3)",
+      [conversation_id, sender_id, content]
+    );
+
+    const conversation = await db.one(
+      "SELECT user_one_id, user_two_id FROM conversations WHERE id = $1",
+      [conversation_id]
+    );
+
+    const receiver_id =
+      conversation.user_one_id === sender_id
+        ? conversation.user_two_id
+        : conversation.user_one_id;
+
+    const sendToUser = req.app.get("sendToUser");
+    sendToUser(receiver_id, {
+      type: "NEW_MESSAGE",
+      data: { conversation_id, sender_id, content, created_at: new Date() },
+    });
+
+    res.status(200).json({ message: "Mensagem enviada com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Houve um erro ao enviar a mensagem" });
   }
-})
+});
+
 
 router.put("/readmessage", async (req, res) => {
   const { id } = req.body;

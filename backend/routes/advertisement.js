@@ -105,7 +105,8 @@ router.get("/", async (req, res) => {
         up.city,
         up.profile_photo,
         up.feedback,
-        up.UF as UF
+        up.UF as UF,
+        u.id_user
       FROM advertisement a
       JOIN Users u ON a.id_user = u.id_user
       JOIN User_Profile up ON u.id_user = up.id_user
