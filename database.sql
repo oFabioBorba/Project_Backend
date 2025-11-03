@@ -62,6 +62,7 @@ CREATE TABLE conversations (
     user_one_id INT REFERENCES Users(id_user) ON DELETE CASCADE,
     user_two_id INT REFERENCES Users(id_user) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW(),
+    finished BOOLEAN DEFAULT FALSE,
     UNIQUE (user_one_id, user_two_id) 
 );
 

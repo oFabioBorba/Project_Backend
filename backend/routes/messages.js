@@ -101,6 +101,7 @@ router.get("/conversations/:user_id", async (req, res) => {
       SELECT
         c.id AS conversation_id,
         c.created_at,
+        C.finished,
         CASE
           WHEN c.user_one_id = $1 THEN c.user_two_id
           ELSE c.user_one_id
@@ -141,6 +142,63 @@ router.get("/conversations/:user_id", async (req, res) => {
     res.status(500).json({ error: "Erro ao buscar a lista de conversas" });
   }
 });
+router.put("/updatetrade/:id_conversations", async (req, res) => {
+  const { id_conversations } = req.params;
+  const { finished, sender_id } = req.body;
+
+  try {
+    await db.none("UPDATE conversations SET finished = $1 WHERE id = $2", [
+      finished,
+      id_conversations,
+    ]);
+
+    let tradeMessage = "";
+
+    if (finished === "pending") {
+      tradeMessage = "💱 Pedido de troca enviado";
+    } else if (finished === "true") {
+      tradeMessage = "✅ Troca aceita!";
+    }
+
+    await db.none(
+      "INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1, $2, $3)",
+      [id_conversations, sender_id, tradeMessage]
+    );
+
+    const conversation = await db.one(
+      "SELECT user_one_id, user_two_id FROM conversations WHERE id = $1",
+      [id_conversations]
+    );
+
+    const otherUserId =
+      conversation.user_one_id === sender_id
+        ? conversation.user_two_id
+        : conversation.user_one_id;
+
+    const sendToUser = req.app.get("sendToUser");
+
+    sendToUser(otherUserId, {
+      type: "NEW_MESSAGE",
+      data: {
+        sender_id,
+        conversation_id: id_conversations,
+        content: tradeMessage,
+        created_at: new Date(),
+      },
+    });
+
+    sendToUser(otherUserId, {
+      type: "TRADE_UPDATE",
+      data: { conversation_id: id_conversations, finished },
+    });
+
+    res.status(200).json({ message: "Pedido de troca atualizado" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Falha ao atualizar o pedido de troca" });
+  }
+});
+
 
 
 export default router;
