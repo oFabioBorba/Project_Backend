@@ -102,6 +102,10 @@ router.get("/conversations/:user_id", async (req, res) => {
         c.id AS conversation_id,
         c.created_at,
         C.finished,
+        c.rated_user1,
+        c.rated_user2,
+        c.user_one_id,
+        c.user_two_id,
         CASE
           WHEN c.user_one_id = $1 THEN c.user_two_id
           ELSE c.user_one_id
