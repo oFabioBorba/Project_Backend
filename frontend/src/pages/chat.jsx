@@ -215,26 +215,74 @@ export default function Chat() {
     }
   }
 
-  async function handleRatingSubmit(stars) {
-    try {
-      await fetch("http://localhost:8080/ratings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversation_id: selectedConv.conversation_id,
-          from_user: userId,
-          to_user: selectedConv.other_user_id,
-          rating: stars,
-        }),
-      });
-      setMessages((prev) => [
-        ...prev,
-        { text: `⭐ Você avaliou ${stars} estrelas!`, isMine: true },
-      ]);
-    } catch (err) {
-      console.error(err);
+async function handleRatingSubmit(stars) {
+  try {
+    await fetch("http://localhost:8080/ratings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to_user: selectedConv.other_user_id,
+        from_user: userId,
+        rating: stars,
+        conversation_id: selectedConv.conversation_id,
+      }),
+    });
+    const convsRes = await fetch(
+      `http://localhost:8080/messages/conversations/${userId}`
+    );
+    if (convsRes.ok) {
+      const convs = await convsRes.json();
+      const updated = convs.find(
+        (c) => c.conversation_id === selectedConv.conversation_id
+      );
+      if (updated) {
+        setConversations(
+          convs.map((conv) => ({
+            ...conv,
+            avatar: conv.profile_photo
+              ? `data:image/jpeg;base64,${conv.profile_photo}`
+              : "/default-avatar.png",
+          }))
+        );
+        setSelectedConv((prev) => ({ ...prev, ...updated }));
+        setTradeStatus(updated.finished || "false");
+      }
     }
+
+    setMessages((prev) => [
+      ...prev,
+      { text: `⭐ Você avaliou ${stars} estrelas!`, isMine: true },
+    ]);
+  } catch (err) {
+    console.error(err);
   }
+}
+
+
+  function StarRating({ onRate }) {
+  const [rating, setRating] = useState(0);
+  return (
+    <div className="stars">
+      {[1.0, 2.0, 3.0, 4.0, 5.0].map((star) => (
+        <span
+          key={star}
+          onClick={() => {
+            setRating(star);
+            onRate(star);
+          }}
+          style={{
+            cursor: "pointer",
+            fontSize: "24px",
+            color: star <= rating ? "gold" : "gray",
+            marginRight: "4px",
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
 
   return (
     <>
@@ -287,15 +335,14 @@ export default function Chat() {
 
                 <div className="chatpage-messages">
                   {messages.map((msg, idx) => {
-                    const isTradeMsg = msg.content.includes(
-                      "Pedido de troca enviado"
-                    );
+                    const isTradeMsg = msg?.content && msg.content.includes("Pedido de troca enviado");
+
                     const isLastTradeMsg = isTradeMsg
                       ? messages
                           .slice()
                           .reverse()
                           .find((m) =>
-                            m.content.includes("Pedido de troca enviado")
+                            m.content?.includes("Pedido de troca enviado")
                           ) === msg
                       : false;
 
@@ -334,12 +381,29 @@ export default function Chat() {
                   <button type="submit">Enviar</button>
                 </form>
 
-                {tradeStatus === "true" && (
-                  <div className="rating-section">
-                    <p>✅ Troca finalizada — avalie o outro participante!</p>
-                    <StarRating onRate={handleRatingSubmit} />
-                  </div>
-                )}
+                {tradeStatus === "true" && (() => {
+                  const hasRated = (() => {
+                    if (!selectedConv) return false;
+                    if (userId === selectedConv.user_one_id) return selectedConv.rated_user1;
+                    if (userId === selectedConv.user_two_id) return selectedConv.rated_user2;
+                    return false;
+                  })();
+
+                  if (hasRated) {
+                    return (
+                      <div className="rating-section">
+                        <p>✅ Troca finalizada — você já avaliou este participante.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="rating-section">
+                      <p>✅ Troca finalizada — avalie o outro participante!</p>
+                      <StarRating onRate={handleRatingSubmit} />
+                    </div>
+                  );
+                })()}
               </>
             ) : (
               <div className="chatpage-empty">Selecione uma conversa</div>
@@ -351,27 +415,3 @@ export default function Chat() {
   );
 }
 
-function StarRating({ onRate }) {
-  const [rating, setRating] = useState(0);
-  return (
-    <div className="stars">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          onClick={() => {
-            setRating(star);
-            onRate(star);
-          }}
-          style={{
-            cursor: "pointer",
-            fontSize: "24px",
-            color: star <= rating ? "gold" : "gray",
-            marginRight: "4px",
-          }}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}

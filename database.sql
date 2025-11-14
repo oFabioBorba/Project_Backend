@@ -18,6 +18,7 @@ CREATE TABLE User_Profile (
     profile_photo BYTEA NOT NULL,
     About varchar (244),
     feedback decimal(2,1) default 0,
+    feedback_count INT default 0,
     CONSTRAINT fk_user_profile
     FOREIGN KEY (id_user)
     REFERENCES Users (id_user)
@@ -62,7 +63,9 @@ CREATE TABLE conversations (
     user_one_id INT REFERENCES Users(id_user) ON DELETE CASCADE,
     user_two_id INT REFERENCES Users(id_user) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW(),
-    finished BOOLEAN DEFAULT FALSE,
+    rated_user1 boolean DEFAULT false,
+    rated_user2 boolean DEFAULT false,
+    finished TEXT DEFAULT FALSE,
     UNIQUE (user_one_id, user_two_id) 
 );
 
