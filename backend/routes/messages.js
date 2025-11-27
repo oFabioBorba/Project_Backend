@@ -5,11 +5,11 @@ import multer from "multer";
 const router = express.Router();
 
 router.get("/conversation/:conversation_id", async (req, res) => {
-  const { conversation_id } = req.params; 
-  
+  const { conversation_id } = req.params;
+
   try {
-    const messages =
-      await db.manyOrNone(`
+    const messages = await db.manyOrNone(
+      `
         SELECT 
             m.id, 
             m.conversation_id,
@@ -19,8 +19,10 @@ router.get("/conversation/:conversation_id", async (req, res) => {
             m.is_read
         FROM messages m
         WHERE m.conversation_id = $1
-        ORDER BY m.created_at ASC;`, [conversation_id]);
-        
+        ORDER BY m.created_at ASC;`,
+      [conversation_id]
+    );
+
     res.status(200).json(messages);
   } catch (error) {
     console.error(error);
@@ -82,22 +84,25 @@ router.post("/sendmessage", async (req, res) => {
   }
 });
 
-
 router.put("/readmessage", async (req, res) => {
   const { id } = req.body;
-  try{
-    const response = await db.none ("UPDATE messages SET is_read = true WHERE id = $1", [id])
-    res.status(200).json ({message: "Mensagens visualizadas"})
-  }catch(error){
-    res.status(500).json({error: "Falha ao ler as mensagens"})
+  try {
+    const response = await db.none(
+      "UPDATE messages SET is_read = true WHERE id = $1",
+      [id]
+    );
+    res.status(200).json({ message: "Mensagens visualizadas" });
+  } catch (error) {
+    res.status(500).json({ error: "Falha ao ler as mensagens" });
   }
-})
+});
 
 router.get("/conversations/:user_id", async (req, res) => {
-  const { user_id } = req.params; 
+  const { user_id } = req.params;
 
   try {
-    const conversations = await db.manyOrNone(`
+    const conversations = await db.manyOrNone(
+      `
       SELECT
         c.id AS conversation_id,
         c.created_at,
@@ -130,17 +135,18 @@ router.get("/conversations/:user_id", async (req, res) => {
       WHERE c.user_one_id = $1 OR c.user_two_id = $1
       
       ORDER BY c.created_at DESC; 
-    `, [user_id]);
-    
-    const formattedConversations = conversations.map(conv => ({
-        ...conv,
-        profile_photo: conv.profile_photo 
-          ? conv.profile_photo.toString('base64') 
-          : null 
+    `,
+      [user_id]
+    );
+
+    const formattedConversations = conversations.map((conv) => ({
+      ...conv,
+      profile_photo: conv.profile_photo
+        ? conv.profile_photo.toString("base64")
+        : null,
     }));
 
     res.status(200).json(formattedConversations);
-
   } catch (error) {
     console.error("Erro ao buscar conversas:", error);
     res.status(500).json({ error: "Erro ao buscar a lista de conversas" });
@@ -203,6 +209,53 @@ router.put("/updatetrade/:id_conversations", async (req, res) => {
   }
 });
 
+router.put("/read", async (req, res) => {
+  const { conversation_id, user_id } = req.body;
 
+  try {
+    await db.none(
+      `
+      UPDATE messages
+      SET is_read = TRUE
+      WHERE conversation_id = $1
+        AND sender_id != $2
+        AND is_read = FALSE
+      `,
+      [conversation_id, user_id]
+    );
+
+    res.status(200).json({ message: "Mensagens marcadas como lidas." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Não foi possível marcar mensagens como lidas." });
+  }
+});
+
+
+router.get("/unread/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    const unread = await db.manyOrNone(
+      `
+      SELECT 
+        c.id AS conversation_id,
+        COUNT(m.id) AS unread_count
+      FROM conversations c
+      JOIN messages m ON m.conversation_id = c.id
+      WHERE (c.user_one_id = $1 OR c.user_two_id = $1)
+        AND m.sender_id != $1
+        AND m.is_read = FALSE
+      GROUP BY c.id
+      `,
+      [user_id]
+    );
+
+    res.status(200).json(unread);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar mensagens não lidas." });
+  }
+});
 
 export default router;

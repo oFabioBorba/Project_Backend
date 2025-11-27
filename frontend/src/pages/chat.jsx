@@ -20,6 +20,7 @@ export default function Chat() {
 
   const user = { photoUrl: photo };
 
+
   useEffect(() => {
     async function loadProfile() {
       try {
@@ -52,6 +53,7 @@ export default function Chat() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+
   useEffect(() => {
     if (!userId) return;
     async function fetchConversations() {
@@ -72,13 +74,16 @@ export default function Chat() {
     fetchConversations();
   }, [userId]);
 
+
   useEffect(() => {
     if (!selectedConv || !userId) return;
+
     async function fetchMessages() {
       const res = await fetch(
         `http://localhost:8080/messages/conversation/${selectedConv.conversation_id}`
       );
       if (!res.ok) return setMessages([]);
+
       const data = await res.json();
       setMessages(
         data.map((msg) => ({
@@ -87,56 +92,73 @@ export default function Chat() {
           text: msg.content,
         }))
       );
+
       setTradeStatus(selectedConv.finished || "false");
+
+      await fetch("http://localhost:8080/messages/read", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversation_id: selectedConv.conversation_id,
+          user_id: userId,
+        }),
+      }); 
     }
+
     fetchMessages();
   }, [selectedConv, userId]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+
   useEffect(() => {
     if (!userId) return;
+
     const ws = new WebSocket("ws://localhost:8080");
     wsRef.current = ws;
 
     ws.onopen = () => ws.send(JSON.stringify({ type: "SET_USER", userId }));
 
-    ws.onmessage = (event) => {
+    ws.onmessage = async (event) => {
       const msg = JSON.parse(event.data);
+
 
       if (msg.type === "NEW_MESSAGE") {
         const newMsg = msg.data;
+
         if (
           selectedConv &&
           newMsg.conversation_id === selectedConv.conversation_id
         ) {
-          setMessages((prev) => {
-            if (
-              prev.some(
-                (m) =>
-                  m.content === newMsg.content &&
-                  m.created_at === newMsg.created_at
-              )
-            )
-              return prev;
-            return [
-              ...prev,
-              {
-                sender_id: newMsg.sender_id,
-                content: newMsg.content,
-                isMine: newMsg.sender_id === userId,
-                created_at: newMsg.created_at,
-                text: newMsg.content,
-              },
-            ];
-          });
+          await fetch("http://localhost:8080/messages/read", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              conversation_id: selectedConv.conversation_id,
+              user_id: userId,
+            }),
+          }); 
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              sender_id: newMsg.sender_id,
+              content: newMsg.content,
+              isMine: newMsg.sender_id === userId,
+              created_at: newMsg.created_at,
+              text: newMsg.content,
+            },
+          ]);
         }
       }
 
+
       if (msg.type === "TRADE_UPDATE") {
         const { conversation_id, finished } = msg.data;
+
         if (
           selectedConv &&
           parseInt(conversation_id) === selectedConv.conversation_id
@@ -146,6 +168,7 @@ export default function Chat() {
         }
       }
     };
+
     ws.onclose = () => console.log("WS fechado");
     return () => ws.close();
   }, [userId, selectedConv]);
@@ -153,6 +176,7 @@ export default function Chat() {
   async function sendMessage(e) {
     e.preventDefault();
     if (!input.trim() || !selectedConv || !userId) return;
+
     await fetch(`http://localhost:8080/messages/sendmessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -162,12 +186,14 @@ export default function Chat() {
         content: input,
       }),
     });
+
     setMessages((prev) => [
       ...prev,
       { content: input, isMine: true, text: input, created_at: new Date() },
     ]);
     setInput("");
   }
+
 
   async function handleStartTrade() {
     if (!selectedConv) return;
@@ -189,6 +215,7 @@ export default function Chat() {
 
   async function handleAcceptTrade() {
     if (!selectedConv) return;
+
     try {
       await fetch(
         `http://localhost:8080/messages/updatetrade/${selectedConv.conversation_id}`,
@@ -198,6 +225,7 @@ export default function Chat() {
           body: JSON.stringify({ finished: "true", sender_id: userId }),
         }
       );
+
       setTradeStatus("true");
       setSelectedConv((prev) => ({ ...prev, finished: "true" }));
 
@@ -215,74 +243,79 @@ export default function Chat() {
     }
   }
 
-async function handleRatingSubmit(stars) {
-  try {
-    await fetch("http://localhost:8080/ratings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to_user: selectedConv.other_user_id,
-        from_user: userId,
-        rating: stars,
-        conversation_id: selectedConv.conversation_id,
-      }),
-    });
-    const convsRes = await fetch(
-      `http://localhost:8080/messages/conversations/${userId}`
-    );
-    if (convsRes.ok) {
-      const convs = await convsRes.json();
-      const updated = convs.find(
-        (c) => c.conversation_id === selectedConv.conversation_id
+
+  async function handleRatingSubmit(stars) {
+    try {
+      await fetch("http://localhost:8080/ratings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to_user: selectedConv.other_user_id,
+          from_user: userId,
+          rating: stars,
+          conversation_id: selectedConv.conversation_id,
+        }),
+      });
+
+      const convsRes = await fetch(
+        `http://localhost:8080/messages/conversations/${userId}`
       );
-      if (updated) {
-        setConversations(
-          convs.map((conv) => ({
-            ...conv,
-            avatar: conv.profile_photo
-              ? `data:image/jpeg;base64,${conv.profile_photo}`
-              : "/default-avatar.png",
-          }))
+
+      if (convsRes.ok) {
+        const convs = await convsRes.json();
+        const updated = convs.find(
+          (c) => c.conversation_id === selectedConv.conversation_id
         );
-        setSelectedConv((prev) => ({ ...prev, ...updated }));
-        setTradeStatus(updated.finished || "false");
+
+        if (updated) {
+          setConversations(
+            convs.map((conv) => ({
+              ...conv,
+              avatar: conv.profile_photo
+                ? `data:image/jpeg;base64,${conv.profile_photo}`
+                : "/default-avatar.png",
+            }))
+          );
+
+          setSelectedConv((prev) => ({ ...prev, ...updated }));
+          setTradeStatus(updated.finished || "false");
+        }
       }
+
+      setMessages((prev) => [
+        ...prev,
+        { text: `⭐ Você avaliou ${stars} estrelas!`, isMine: true },
+      ]);
+    } catch (err) {
+      console.error(err);
     }
-
-    setMessages((prev) => [
-      ...prev,
-      { text: `⭐ Você avaliou ${stars} estrelas!`, isMine: true },
-    ]);
-  } catch (err) {
-    console.error(err);
   }
-}
-
 
   function StarRating({ onRate }) {
-  const [rating, setRating] = useState(0);
-  return (
-    <div className="stars">
-      {[1.0, 2.0, 3.0, 4.0, 5.0].map((star) => (
-        <span
-          key={star}
-          onClick={() => {
-            setRating(star);
-            onRate(star);
-          }}
-          style={{
-            cursor: "pointer",
-            fontSize: "24px",
-            color: star <= rating ? "gold" : "gray",
-            marginRight: "4px",
-          }}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
+    const [rating, setRating] = useState(0);
+    return (
+      <div className="stars">
+        {[1.0, 2.0, 3.0, 4.0, 5.0].map((star) => (
+          <span
+            key={star}
+            onClick={() => {
+              setRating(star);
+              onRate(star);
+            }}
+            style={{
+              cursor: "pointer",
+              fontSize: "24px",
+              color: star <= rating ? "gold" : "gray",
+              marginRight: "4px",
+            }}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    );
+  }
+
 
   return (
     <>
@@ -414,4 +447,3 @@ async function handleRatingSubmit(stars) {
     </>
   );
 }
-
