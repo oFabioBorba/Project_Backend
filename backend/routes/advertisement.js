@@ -51,7 +51,7 @@ router.post("/", (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const { idcategory, city, id_advertisement, uf, name, date, page, id_user, limit: queryLimit } = req.query;
+    const { idcategory, city, id_advertisement, uf, name, date, page, id_user, rating, limit: queryLimit } = req.query;
     const limit = queryLimit ? parseInt(queryLimit) : 7;
     const offset = page ? (parseInt(page) - 1) * limit : 0;
 
@@ -87,6 +87,11 @@ router.get("/", async (req, res) => {
     if (uf) {
       filtros.push("up.UF ILIKE ${uf}");
       valores.uf = `%${uf}%`;
+    }
+
+    if(rating){
+      filtros.push("up.feedback >= ${rating}");
+      valores.rating = rating;
     }
 
     const whereClause = filtros.length ? "WHERE " + filtros.join(" AND ") : "";

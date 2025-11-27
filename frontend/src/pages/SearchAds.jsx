@@ -7,6 +7,7 @@ import { useSearchParams } from "react-router-dom";
 import AdSearchCards from "../components/AdSearchCards";
 
 export default function SearcAds() {
+    const [unreadCount, setUnreadCount] = useState(0);
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
     const [photo, setPhoto] = useState(null);
     const user = { photoUrl: photo };
@@ -20,6 +21,18 @@ export default function SearcAds() {
 
   const navigate = useNavigate();
 
+  async function fetchUnreadCount(uid) {
+  if (!uid) return;
+
+  try {
+    const res = await fetch(`http://localhost:8080/messages/unread/${uid}`);
+    const data = await res.json();
+
+    setUnreadCount(Number(data[0]?.unread_count || 0));
+  } catch (err) {
+    console.error("Erro ao buscar mensagens não lidas:", err);
+  }
+}
   useEffect(() => {
     async function checkAuthAndLoadProfile() {
       try {
@@ -52,6 +65,7 @@ export default function SearcAds() {
             const photoUrl = `data:image/jpeg;base64,${profile.profile_photo}`;
             setPhoto(photoUrl);
           }
+          fetchUnreadCount(decoded.userid);
         }
         if (response.status === 404) {
           navigate("/profile");
@@ -106,7 +120,7 @@ fetchAds();}, [])
 
   return (
     <>
-      <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
+      <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} unreadCount={unreadCount} />
       <main style={{ paddingTop: "200px" }}>
       <div className="page-content">
         <div className="ad-search-list">

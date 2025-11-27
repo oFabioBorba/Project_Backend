@@ -9,45 +9,35 @@ export default function Home() {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [photo, setPhoto] = useState(null);
   const user = { photoUrl: photo };
+
+  const [unreadCount, setUnreadCount] = useState(0); 
   const [allCategories, setAllCategories] = useState([]);
   const [adsByCity, setAdsByCity] = useState([]);
   const [adsByRating, setAdsByRating] = useState([]);
   const [city, setCity] = useState();
+  const [userId, setUserId] = useState(null); 
+
   const [pageCity, setPageCity] = useState(1);
   const [pageRating, setPageRating] = useState(1);
   const [disablePaginationCity, setDisablePaginationCity] = useState(false);
-  const [disablePaginationRating, setDisablePaginationRating] = useState(false);
-
-  async function checkNextPageCity() {
-    if (!city) return false;
-    const limit = getCardsPerPage();
-    const nextPage = pageCity + 1;
-    try {
-      const response = await fetch(
-        `http://localhost:8080/ad?city=${city}&page=${nextPage}&limit=${limit}`
-      );
-      const data = await response.json();
-      return Array.isArray(data) && data.length > 0;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  async function checkNextPageRating() {
-    const limit = getCardsPerPage();
-    const nextPage = pageRating + 1;
-    try {
-      const response = await fetch(
-        `http://localhost:8080/ad?sort=rating&page=${nextPage}&limit=${limit}`
-      );
-      const data = await response.json();
-      return Array.isArray(data) && data.length > 0;
-    } catch (error) {
-      return false;
-    }
-  }
+  const [disablePaginationRating, setDisablePaginationRating] =
+    useState(false);
 
   const navigate = useNavigate();
+
+async function fetchUnreadCount(uid) {
+  if (!uid) return;
+
+  try {
+    const res = await fetch(`http://localhost:8080/messages/unread/${uid}`);
+    const data = await res.json();
+
+    setUnreadCount(Number(data[0]?.unread_count || 0));
+  } catch (err) {
+    console.error("Erro ao buscar mensagens não lidas:", err);
+  }
+}
+
 
   useEffect(() => {
     async function checkAuthAndLoadProfile() {
@@ -59,8 +49,9 @@ export default function Home() {
         }
 
         const decoded = jwtDecode(token);
-        const now = Date.now() / 1000;
+        setUserId(decoded.userid);
 
+        const now = Date.now() / 1000;
         if (decoded.exp && decoded.exp < now) {
           navigate("/");
           return;
@@ -77,12 +68,17 @@ export default function Home() {
         if (response.ok) {
           const data = await response.json();
           const profile = data.response;
+
           setCity(profile.city);
+
           if (profile.profile_photo) {
             const photoUrl = `data:image/jpeg;base64,${profile.profile_photo}`;
             setPhoto(photoUrl);
           }
+
+          fetchUnreadCount(decoded.userid);
         }
+
         if (response.status === 404) {
           navigate("/profile");
         }
@@ -93,10 +89,14 @@ export default function Home() {
     checkAuthAndLoadProfile();
   }, [navigate]);
 
+
+
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   }, [theme]);
+
 
   useEffect(() => {
     async function listcategories() {
@@ -126,15 +126,34 @@ export default function Home() {
     };
   }
 
+
+  async function checkNextPageCity() {
+    if (!city) return false;
+    const limit = getCardsPerPage();
+    const nextPage = pageCity + 1;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ad?city=${city}&page=${nextPage}&limit=${limit}`
+      );
+      const data = await response.json();
+      return Array.isArray(data) && data.length > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
   useEffect(() => {
     async function fetchAdsByCity() {
       if (!city) return;
+
       const limit = getCardsPerPage();
       try {
         const response = await fetch(
           `http://localhost:8080/ad?city=${city}&page=${pageCity}&limit=${limit}`
         );
         const data = await response.json();
+
         if (Array.isArray(data) && data.length > 0) {
           setDisablePaginationCity(false);
           setAdsByCity(data);
@@ -145,18 +164,37 @@ export default function Home() {
         console.log("Erro ao buscar anúncios da cidade", error);
       }
     }
+
     fetchAdsByCity();
     const handleResize = debounce(fetchAdsByCity, 500);
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [city, pageCity]);
 
+
+  async function checkNextPageRating() {
+    const limit = getCardsPerPage();
+    const nextPage = pageRating + 1;
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/ad?sort=rating&page=${nextPage}&limit=${limit}`
+      );
+      const data = await response.json();
+      return Array.isArray(data) && data.length > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
   useEffect(() => {
     async function fetchBestRated() {
       const limit = getCardsPerPage();
+
       try {
         const response = await fetch(
-          `http://localhost:8080/ad?sort=rating&page=${pageRating}&limit=${limit}`
+          `http://localhost:8080/ad?sort=rating&page=${pageRating}&limit=${limit}&rating=4`
         );
         const data = await response.json();
         setAdsByRating(data);
@@ -164,15 +202,24 @@ export default function Home() {
         console.log("Erro ao buscar melhores avaliados", error);
       }
     }
+
     fetchBestRated();
     const handleResize = debounce(fetchBestRated, 500);
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [pageRating]);
 
+ 
   return (
     <>
-      <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
+      <MarketplaceNavbar
+        user={user}
+        theme={theme}
+        setTheme={setTheme}
+        unreadCount={unreadCount} 
+      />
+
       <div className="page-content">
         <div className="categories-options">
           {allCategories.map((category) => (
@@ -188,6 +235,7 @@ export default function Home() {
             </div>
           ))}
         </div>
+
         <div className="ads-sections">
           <div className="FilterCity">
             <h2>Na sua cidade</h2>
@@ -200,12 +248,14 @@ export default function Home() {
                 <>
                   <button
                     className="nav-arrow-btn"
-                    onClick={() => setPageCity((prev) => Math.max(1, prev - 1))}
+                    onClick={() =>
+                      setPageCity((prev) => Math.max(1, prev - 1))
+                    }
                     disabled={pageCity === 1}
                   >
-                    {" "}
-                    {"<"}{" "}
+                    {"<"}
                   </button>
+
                   {adsByCity.map((ad) => (
                     <AdCard
                       key={ad.id_advertisement}
@@ -213,12 +263,13 @@ export default function Home() {
                       onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
                     />
                   ))}
+
                   <button
                     className="nav-arrow-btn"
                     onClick={async () => {
                       if (await checkNextPageCity()) setPageCity(pageCity + 1);
                     }}
-                    disabled={disablePaginationCity === true}
+                    disabled={disablePaginationCity}
                   >
                     {">"}
                   </button>
@@ -243,9 +294,9 @@ export default function Home() {
                     }
                     disabled={pageRating === 1}
                   >
-                    {" "}
-                    {"<"}{" "}
+                    {"<"}
                   </button>
+
                   {adsByRating.map((ad) => (
                     <AdCard
                       key={ad.id_advertisement}
@@ -253,13 +304,14 @@ export default function Home() {
                       onClick={() => navigate(`/ad/${ad.id_advertisement}`)}
                     />
                   ))}
+
                   <button
                     className="nav-arrow-btn"
                     onClick={async () => {
                       if (await checkNextPageRating())
                         setPageRating(pageRating + 1);
                     }}
-                    disabled={disablePaginationRating === true}
+                    disabled={disablePaginationRating}
                   >
                     {">"}
                   </button>
@@ -268,6 +320,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+
         <button className="Newad" onClick={() => navigate("/ad")}>
           +
         </button>

@@ -10,9 +10,8 @@ import {
   Image,
 } from "react-bootstrap";
 
-export default function MarketplaceNavbar({ user, theme, setTheme }) {
-  const [search, setSearch] = useState();
-
+export default function MarketplaceNavbar({ user, theme, setTheme, unreadCount }) {
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   return (
@@ -65,8 +64,9 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
           </Button>
         </Form>
 
-        {/* Avatar e tema */}
+        {/* Avatar, tema e notificações */}
         <Nav className="align-items-center">
+
           {/* Botão alternar tema */}
           <button
             type="button"
@@ -76,7 +76,46 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
             {theme === "dark" ? "🌞 Claro" : "🌙 Escuro"}
           </button>
 
-          {/* Avatar / Dropdown */}
+          {/* Ícone de notificações (SVG) */}
+          <div
+            style={{
+              position: "relative",
+              marginRight: "16px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/chat")}
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 16 16"
+              fill="var(--text)"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 
+                       6c0 1.098-.5 3.5-1 4v1h12v-1c-.5-.5-1-2.902-1-4a5.002 5.002 0 0 0-4.005-4.901z"/>
+            </svg>
+
+            {unreadCount > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "-6px",
+                  right: "-6px",
+                  background: "red",
+                  color: "white",
+                  borderRadius: "50%",
+                  fontSize: "12px",
+                  padding: "2px 6px",
+                  fontWeight: "bold",
+                }}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </div>
+
+          {/* Avatar menu */}
           <NavDropdown
             title={
               <Image
@@ -102,7 +141,6 @@ export default function MarketplaceNavbar({ user, theme, setTheme }) {
             </NavDropdown.Item>
             <NavDropdown.Divider />
 
-            
             <NavDropdown.Item
               onClick={() => {
                 localStorage.removeItem("token");

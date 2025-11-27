@@ -5,6 +5,7 @@ import MarketplaceNavbar from "../components/navbar";
 import { jwtDecode } from "jwt-decode";
 
 export default function Ad() {
+  const [unreadCount, setUnreadCount] = useState(0); 
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [photo, setPhoto] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
@@ -86,6 +87,20 @@ export default function Ad() {
       setMessage("Erro ao criar anúncio: " + error.message);
     }
   }
+ 
+  async function fetchUnreadCount(uid) {
+  if (!uid) return;
+
+  try {
+    const res = await fetch(`http://localhost:8080/messages/unread/${uid}`);
+    const data = await res.json();
+
+    setUnreadCount(Number(data[0]?.unread_count || 0));
+  } catch (err) {
+    console.error("Erro ao buscar mensagens não lidas:", err);
+  }
+}
+  
 
   useEffect(() => {
     async function checkAuthAndLoadProfile() {
@@ -119,6 +134,7 @@ export default function Ad() {
             const photoUrl = `data:image/jpeg;base64,${profile.profile_photo}`;
             setPhoto(photoUrl);
           }
+          fetchUnreadCount(decoded.userid);
         }
         if (response.status === 404) {
           navigate("/profile");
@@ -150,7 +166,7 @@ export default function Ad() {
 
   return (
     <>
-      <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} />
+      <MarketplaceNavbar user={user} theme={theme} setTheme={setTheme} unreadCount={unreadCount} />
       <form className="card" style={{ width: 1000 }} onSubmit={saveAd}>
         <div className="sendphoto">
           <div className="photopreview" aria-label="Pré-visualização das fotos">
